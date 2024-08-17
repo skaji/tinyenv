@@ -21,12 +21,11 @@ Commands:
 Examples:
   > tinyenv perl init
   > tinyenv perl global 5.40.0
-  > tinyenv perl version
-  `
+  > tinyenv perl version`
 
 func main() {
 	if len(os.Args) == 2 && os.Args[1] == "-h" || os.Args[1] == "--help" {
-		fmt.Print(helpMessage)
+		fmt.Println(helpMessage)
 		os.Exit(1)
 	}
 	if len(os.Args) == 2 && os.Args[1] == "--version" {
@@ -51,7 +50,7 @@ func main() {
 	var lang *Lang
 	switch l := os.Args[1]; l {
 	case "perl", "node", "go", "java", "ruby", "python", "rust":
-		lang = &Lang{Root: filepath.Join(root, l)}
+		lang = &Lang{Name: l, Root: filepath.Join(root, l)}
 	default:
 		fmt.Fprintln(os.Stderr, "unknown language: "+l)
 		os.Exit(1)

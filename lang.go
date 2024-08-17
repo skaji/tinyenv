@@ -1,12 +1,16 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"slices"
 )
 
 type Lang struct {
+	Name string
 	Root string
 }
 
@@ -62,10 +66,44 @@ func (l *Lang) Rehash() error {
 			exeFiles = append(exeFiles, e.Name())
 		}
 	}
+
+	header := fmt.Sprintf("#!/bin/sh\n# %s\n", l.Name)
+	headerBytes := []byte(header)
+	headerLen := len(headerBytes)
+	{
+		// remove old exeFiles
+		rootBinDir := filepath.Join(filepath.Dir(l.Root), "bin")
+		entries, err := os.ReadDir(rootBinDir)
+		if err != nil {
+			return err
+		}
+		for _, e := range entries {
+			if e.IsDir() {
+				continue
+			}
+			path := filepath.Join(rootBinDir, e.Name())
+			f, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			b := make([]byte, headerLen)
+			_, err = f.Read(b)
+			f.Close()
+			if err != nil && !errors.Is(err, io.EOF) {
+				return err
+			}
+			if slices.Equal(b[:headerLen], headerBytes) {
+				if err := os.Remove(path); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	for _, exeFile := range exeFiles {
 		source := filepath.Join(l.Root, "versions", version, "bin", exeFile)
 		target := filepath.Join(filepath.Dir(l.Root), "bin", exeFile)
-		content := fmt.Sprintf(`#!/bin/sh`+"\n"+`exec "%s" "$@"`+"\n", source)
+		content := header + fmt.Sprintf(`exec "%s" "$@"`, source) + "\n"
 		if err := os.WriteFile(target, []byte(content), 0755); err != nil {
 			return err
 		}
