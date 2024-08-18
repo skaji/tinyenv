@@ -3,6 +3,7 @@
 A tiny replacement of `*env` (rbenv, plenv, goenv, ....)
 
 A major difference from `*env` is that tinyenv does NOT provide installers of languages.
+You should install langauages manually. See [LANGUAGE-INSTALL.md](LANGUAGE-INSTALL.md).
 
 # Install
 
@@ -27,8 +28,6 @@ A major difference from `*env` is that tinyenv does NOT provide installers of la
 ❯ tinyenv java init
 
 # install java from https://adoptium.net/temurin/releases/
-# mac
-❯ curl -fsSL https://api.adoptium.net/v3/binary/latest/17/ga/mac/aarch64/jdk/hotspot/normal/eclipse | tar xzf - -C ~/.tinyenv/java/versions
 # linux
 ❯ curl -fsSL https://api.adoptium.net/v3/binary/latest/17/ga/linux/x64/jdk/hotspot/normal/eclipse | tar xzf - -C ~/.tinyenv/java/versions
 

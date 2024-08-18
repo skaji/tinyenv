@@ -40,7 +40,7 @@ func main() {
 		fmt.Print(zshCompletions)
 		os.Exit(0)
 	}
-	if len(os.Args) < 3 {
+	if len(os.Args) < 3 && !(len(os.Args) == 2 && os.Args[1] == "root") {
 		fmt.Fprintln(os.Stderr, "invalid arguments")
 		os.Exit(1)
 	}
@@ -53,6 +53,10 @@ func main() {
 	if err := os.MkdirAll(filepath.Join(root, "bin"), 0755); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
+	}
+	if os.Args[1] == "root" {
+		fmt.Println(root)
+		os.Exit(0)
 	}
 
 	var lang *Lang
