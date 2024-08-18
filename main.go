@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"errors"
 	"fmt"
 	"os"
@@ -23,6 +24,9 @@ Examples:
   > tinyenv perl global 5.40.0
   > tinyenv perl version`
 
+//go:embed share/completions.zsh
+var zshCompletions string
+
 func main() {
 	if len(os.Args) == 2 && os.Args[1] == "-h" || os.Args[1] == "--help" {
 		fmt.Println(helpMessage)
@@ -30,6 +34,10 @@ func main() {
 	}
 	if len(os.Args) == 2 && os.Args[1] == "--version" {
 		fmt.Println(version)
+		os.Exit(0)
+	}
+	if len(os.Args) == 2 && os.Args[1] == "zsh-completions" {
+		fmt.Print(zshCompletions)
 		os.Exit(0)
 	}
 	if len(os.Args) < 3 {
