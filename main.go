@@ -14,7 +14,7 @@ var version = "dev"
 var helpMessage = `Usage: tinyenv LANGUAGE COMMAND...
 
 Languages:
-  go, java, node, perl, python, ruby, rust
+  go, java, node, perl, python, ruby
 
 Commands:
   global, init, reahsh, version, versions
@@ -61,7 +61,7 @@ func main() {
 
 	var lang *Lang
 	switch l := os.Args[1]; l {
-	case "perl", "node", "go", "java", "ruby", "python", "rust":
+	case "perl", "node", "go", "java", "ruby", "python":
 		lang = &Lang{Name: l, Root: filepath.Join(root, l)}
 	default:
 		fmt.Fprintln(os.Stderr, "unknown language: "+l)

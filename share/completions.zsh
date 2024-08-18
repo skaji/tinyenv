@@ -6,7 +6,7 @@ _tinyenv() {
   read -cA words
 
   if [[ ${#words} -eq 2 ]]; then
-    completions="$(printf "go\njava\nnode\nperl\npython\nruby\nrust")"
+    completions="$(printf "go\njava\nnode\nperl\npython\nruby")"
   elif [[ ${#words} -eq 3 ]]; then
     completions="$(printf "global\ninit\nreahsh\nversion\nversions")"
   elif [[ ${#words} -eq 4 ]]; then
