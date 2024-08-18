@@ -2,9 +2,6 @@
 
 A tiny replacement of `*env` (rbenv, plenv, goenv, ....)
 
-A major difference from `*env` is that tinyenv does NOT provide installers of languages.
-You should install langauages manually. See [LANGUAGE-INSTALL.md](LANGUAGE-INSTALL.md).
-
 # Install
 
 ```console
@@ -27,14 +24,22 @@ You should install langauages manually. See [LANGUAGE-INSTALL.md](LANGUAGE-INSTA
 ```console
 ❯ tinyenv java init
 
-# install java from https://adoptium.net/temurin/releases/
-# linux
-❯ curl -fsSL https://api.adoptium.net/v3/binary/latest/17/ga/linux/x64/jdk/hotspot/normal/eclipse | tar xzf - -C ~/.tinyenv/java/versions
+❯ tinyenv java install -l
+22
+21
+20
+19
+18
+17
+16
+11
+8
 
-❯ tinyenv java versions
-jdk-17.0.12+7
+❯ tinyenv java install 17
+---> Downloading https://api.adoptium.net/v3/binary/latest/17/ga/mac/aarch64/jdk/hotspot/normal/eclipse
+---> Extracting /Users/skaji/.tinyenv/java/cache/17-mac-aarch64.tar.gz
 
-❯ tinyenv java global jdk-17.0.12+7
+❯ tinyenv java global 17
 
 ❯ java --version
 openjdk 17.0.12 2024-07-16

@@ -7,6 +7,9 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
+
+	"golang.org/x/mod/semver"
 )
 
 type Lang struct {
@@ -34,9 +37,19 @@ func (l *Lang) Versions() ([]string, error) {
 	var out []string
 	for _, e := range entries {
 		if e.IsDir() {
-			out = append(out, e.Name())
+			version := e.Name()
+			out = append(out, version)
 		}
 	}
+	slices.SortFunc(out, func(v1, v2 string) int {
+		if !strings.HasPrefix(v1, "v") {
+			v1 = "v" + v1
+		}
+		if !strings.HasPrefix(v2, "v") {
+			v2 = "v" + v2
+		}
+		return semver.Compare(v2, v1)
+	})
 	return out, nil
 }
 

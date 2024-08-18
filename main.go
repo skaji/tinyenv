@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"errors"
 	"fmt"
@@ -8,6 +9,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+
+	"github.com/skaji/tinyenv/installer"
 )
 
 var version = "dev"
@@ -18,10 +21,12 @@ Languages:
   go, java, node, perl, python, ruby
 
 Commands:
-  global, init, reahsh, version, versions
+  global, init, install, reahsh, version, versions
 
 Examples:
   > tinyenv perl init
+  > tinyenv python install -l
+  > tinyenv python install 3.12.5+20240814
   > tinyenv perl global 5.40.0
   > tinyenv perl version`
 
@@ -29,7 +34,7 @@ Examples:
 var zshCompletions string
 
 func main() {
-	if len(os.Args) == 2 && os.Args[1] == "-h" || os.Args[1] == "--help" {
+	if len(os.Args) == 2 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
 		fmt.Println(helpMessage)
 		os.Exit(1)
 	}
@@ -80,9 +85,13 @@ func main() {
 			if err != nil {
 				return err
 			}
-			slices.Sort(vs)
+			current, _ := lang.Version()
 			for _, v := range vs {
-				fmt.Println(v)
+				mark := "  "
+				if v == current {
+					mark = "* "
+				}
+				fmt.Println(mark + v)
 			}
 		case "version":
 			v, err := lang.Version()
@@ -108,6 +117,37 @@ func main() {
 			return lang.Rehash()
 		case "rehash":
 			return lang.Rehash()
+		case "install":
+			if len(args) == 0 {
+				return errors.New("need version argument.")
+			}
+			var inst installer.Installer
+			switch lang.Name {
+			case "go":
+				inst = &installer.Go{Root: lang.Root}
+			case "java":
+				inst = &installer.Java{Root: lang.Root}
+			case "node":
+				inst = &installer.Node{Root: lang.Root}
+			case "perl":
+				inst = &installer.Perl{Root: lang.Root}
+			case "python":
+				inst = &installer.Python{Root: lang.Root}
+			default:
+				return errors.New("not implemented yet")
+			}
+			if args[0] == "-l" || args[0] == "-L" {
+				versions, err := inst.List(context.Background(), args[0] == "-L")
+				if err != nil {
+					return err
+				}
+				for _, version := range versions {
+					fmt.Println(version)
+				}
+				return nil
+			}
+			version := args[0]
+			return inst.Install(context.Background(), version)
 		default:
 			plugin := "tinyenv-" + command
 			path, err := exec.LookPath(plugin)
