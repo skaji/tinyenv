@@ -25,9 +25,9 @@ Commands:
 
 Examples:
   > tinyenv python install -l
-  > tinyenv python install 3.12.5+20240814
-  > tinyenv perl global 5.40.0
-  > tinyenv perl version`
+  > tinyenv python install 3.9.19+20240814
+  > tinyenv python install latest
+  > tinyenv python global 3.12.5+20240814`
 
 //go:embed share/completions.zsh
 var zshCompletions string
