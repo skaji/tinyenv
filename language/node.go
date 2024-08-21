@@ -61,6 +61,13 @@ func (n *Node) List(ctx context.Context, all bool) ([]string, error) {
 }
 
 func (n *Node) Install(ctx context.Context, version string) error {
+	if version == "latest" {
+		versions, err := n.List(ctx, false)
+		if err != nil {
+			return err
+		}
+		version = versions[0]
+	}
 	targetDir := filepath.Join(n.Root, "versions", version)
 	if ExistsFS(targetDir) {
 		return errors.New("already exists " + targetDir)
