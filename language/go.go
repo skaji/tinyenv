@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -40,13 +41,27 @@ func (g *Go) List(ctx context.Context, all bool) ([]string, error) {
 		version := strings.TrimPrefix(res.Version, "go")
 		out = append(out, version)
 	}
-	if !all && len(out) > 10 {
-		out = out[:10]
+	if !all {
+		stable := regexp.MustCompile(`^\d+\.\d+(?:\.\d+)$`)
+		var out2 []string
+		for _, v := range out {
+			if stable.MatchString(v) {
+				out2 = append(out2, v)
+			}
+		}
+		return out2[:10], nil
 	}
 	return out, nil
 }
 
 func (g *Go) Install(ctx context.Context, version string) error {
+	if version == "latest" {
+		versions, err := g.List(ctx, false)
+		if err != nil {
+			return err
+		}
+		version = versions[0]
+	}
 	targetDir := filepath.Join(g.Root, "versions", version)
 	if ExistsFS(targetDir) {
 		return errors.New("already exists " + targetDir)

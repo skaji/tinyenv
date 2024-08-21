@@ -36,11 +36,17 @@ func (p *Perl) List(ctx context.Context, all bool) ([]string, error) {
 		if i == 0 {
 			continue
 		}
+		if !strings.Contains(line, ","+perlOSArch.OS()+",") {
+			continue
+		}
+		if !strings.Contains(line, ","+perlOSArch.Arch()+",") {
+			continue
+		}
 		parts := strings.Split(line, ",")
 		if len(parts) > 0 {
 			version := parts[0]
 			if !seen[version] {
-				out = append(out, version)
+				out = append(out, "relocatable-"+version)
 				seen[version] = true
 			}
 		}
@@ -52,13 +58,23 @@ func (p *Perl) List(ctx context.Context, all bool) ([]string, error) {
 }
 
 func (p *Perl) Install(ctx context.Context, version string) error {
+	if version == "latest" {
+		versions, err := p.List(ctx, false)
+		if err != nil {
+			return err
+		}
+		version = versions[0]
+	}
+	if !strings.HasPrefix(version, "relocatable-") {
+		return errors.New("invalid version")
+	}
 	targetDir := filepath.Join(p.Root, "versions", version)
 	if ExistsFS(targetDir) {
 		return errors.New("already exists " + targetDir)
 	}
 
-	url := fmt.Sprintf(perlAssetURL, version, perlOSArch.OS(), perlOSArch.Arch())
-	cacheFile := filepath.Join(p.Root, "cache", fmt.Sprintf("perl-%s-%s-%s.tar.xz", version, perlOSArch.OS(), perlOSArch.Arch()))
+	url := fmt.Sprintf(perlAssetURL, strings.TrimPrefix(version, "relocatable-"), perlOSArch.OS(), perlOSArch.Arch())
+	cacheFile := filepath.Join(p.Root, "cache", fmt.Sprintf("%s-%s-%s.tar.xz", version, perlOSArch.OS(), perlOSArch.Arch()))
 	if err := os.MkdirAll(filepath.Join(p.Root, "cache"), 0755); err != nil {
 		return err
 	}

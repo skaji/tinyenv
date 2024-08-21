@@ -62,6 +62,14 @@ func (p *Python) List(ctx context.Context, all bool) ([]string, error) {
 }
 
 func (p *Python) Install(ctx context.Context, version string) error {
+	if version == "latest" {
+		versions, err := p.List(ctx, false)
+		if err != nil {
+			return err
+		}
+		version = versions[0]
+	}
+
 	pythonVersion, tag, ok := strings.Cut(version, "+")
 	if !ok {
 		return errors.New("invalid version: " + version)
