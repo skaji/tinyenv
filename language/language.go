@@ -1,4 +1,4 @@
-package main
+package language
 
 import (
 	"errors"
@@ -12,24 +12,24 @@ import (
 	"golang.org/x/mod/semver"
 )
 
-type Lang struct {
+type Language struct {
 	Name string
 	Root string
 }
 
-func (l *Lang) Version() (string, error) {
+func (l *Language) Version() (string, error) {
 	b, err := os.ReadFile(filepath.Join(l.Root, "version"))
 	if err != nil {
-		return "", err
+		return "", errors.New("no version")
 	}
 	return string(b[:len(b)-1]), nil
 }
 
-func (l *Lang) SetVersion(version string) error {
+func (l *Language) SetVersion(version string) error {
 	return os.WriteFile(filepath.Join(l.Root, "version"), append([]byte(version), '\n'), 0644)
 }
 
-func (l *Lang) Versions() ([]string, error) {
+func (l *Language) Versions() ([]string, error) {
 	entries, err := os.ReadDir(filepath.Join(l.Root, "versions"))
 	if err != nil {
 		return nil, err
@@ -53,11 +53,15 @@ func (l *Lang) Versions() ([]string, error) {
 	return out, nil
 }
 
-func (l *Lang) Init() error {
-	return os.MkdirAll(filepath.Join(l.Root, "versions"), 0755)
+func (l *Language) Init() error {
+	versionsDir := filepath.Join(l.Root, "versions")
+	if ExistsFS(versionsDir) {
+		return nil
+	}
+	return os.MkdirAll(versionsDir, 0755)
 }
 
-func (l *Lang) Rehash() error {
+func (l *Language) Rehash() error {
 	version, err := l.Version()
 	if err != nil {
 		return err
@@ -122,4 +126,21 @@ func (l *Lang) Rehash() error {
 		}
 	}
 	return nil
+}
+
+func (l *Language) Installer() Installer {
+	switch l.Name {
+	case "go":
+		return &Go{Root: l.Root}
+	case "java":
+		return &Java{Root: l.Root}
+	case "node":
+		return &Node{Root: l.Root}
+	case "perl":
+		return &Perl{Root: l.Root}
+	case "python":
+		return &Python{Root: l.Root}
+	default:
+		return nil
+	}
 }

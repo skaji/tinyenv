@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/skaji/tinyenv/installer"
+	"github.com/skaji/tinyenv/language"
 )
 
 var version = "dev"
@@ -21,10 +21,9 @@ Languages:
   go, java, node, perl, python, ruby
 
 Commands:
-  global, init, install, reahsh, version, versions
+  global, install, reahsh, version, versions
 
 Examples:
-  > tinyenv perl init
   > tinyenv python install -l
   > tinyenv python install 3.12.5+20240814
   > tinyenv perl global 5.40.0
@@ -65,21 +64,21 @@ func main() {
 		os.Exit(0)
 	}
 
-	var lang *Lang
+	var lang *language.Language
 	switch l := os.Args[1]; l {
 	case "perl", "node", "go", "java", "ruby", "python":
-		lang = &Lang{Name: l, Root: filepath.Join(root, l)}
+		lang = &language.Language{Name: l, Root: filepath.Join(root, l)}
 	default:
 		fmt.Fprintln(os.Stderr, "unknown language: "+l)
+		os.Exit(1)
+	}
+	if err := lang.Init(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
 	err2 := func(command string, args ...string) error {
 		switch command {
-		case "init":
-			if err := lang.Init(); err != nil {
-				return err
-			}
 		case "versions":
 			vs, err := lang.Versions()
 			if err != nil {
@@ -118,26 +117,15 @@ func main() {
 		case "rehash":
 			return lang.Rehash()
 		case "install":
+			installer := lang.Installer()
+			if installer == nil {
+				return errors.New("no installer for " + lang.Name)
+			}
 			if len(args) == 0 {
 				return errors.New("need version argument.")
 			}
-			var inst installer.Installer
-			switch lang.Name {
-			case "go":
-				inst = &installer.Go{Root: lang.Root}
-			case "java":
-				inst = &installer.Java{Root: lang.Root}
-			case "node":
-				inst = &installer.Node{Root: lang.Root}
-			case "perl":
-				inst = &installer.Perl{Root: lang.Root}
-			case "python":
-				inst = &installer.Python{Root: lang.Root}
-			default:
-				return errors.New("not implemented yet")
-			}
 			if args[0] == "-l" || args[0] == "-L" {
-				versions, err := inst.List(context.Background(), args[0] == "-L")
+				versions, err := installer.List(context.Background(), args[0] == "-L")
 				if err != nil {
 					return err
 				}
@@ -147,7 +135,7 @@ func main() {
 				return nil
 			}
 			version := args[0]
-			return inst.Install(context.Background(), version)
+			return installer.Install(context.Background(), version)
 		default:
 			plugin := "tinyenv-" + command
 			path, err := exec.LookPath(plugin)
