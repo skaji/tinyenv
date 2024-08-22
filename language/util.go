@@ -124,7 +124,7 @@ func HTTPMirror(ctx context.Context, url string, targetFile string) error {
 	}
 	if h := res.Header.Get("Last-Modified"); h != "" {
 		if t, err := http.ParseTime(h); err == nil {
-			os.Chtimes(f.Name(), t, t)
+			_ = os.Chtimes(f.Name(), t, t)
 		}
 	}
 	if err := os.Rename(f.Name(), targetFile); err != nil {
