@@ -94,6 +94,9 @@ func HTTPGet(ctx context.Context, url string) ([]byte, error) {
 
 func HTTPMirror(ctx context.Context, url string, targetFile string) error {
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if info, err := os.Stat(targetFile); err == nil {
+		req.Header.Set("If-Modified-Since", info.ModTime().Format(http.TimeFormat))
+	}
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
@@ -102,17 +105,30 @@ func HTTPMirror(ctx context.Context, url string, targetFile string) error {
 		_, _ = io.Copy(io.Discard, res.Body)
 		res.Body.Close()
 	}()
+	if res.StatusCode == http.StatusNotModified {
+		return nil
+	}
 	if res.StatusCode/100 != 2 {
 		return errors.New(res.Status + " " + url)
 	}
 
-	f, err := os.Create(targetFile)
+	f, err := os.Create(targetFile + ".tmp")
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-
-	if _, err = io.Copy(f, res.Body); err != nil {
+	_, copyErr := io.Copy(f, res.Body)
+	f.Close()
+	if copyErr != nil {
+		os.Remove(f.Name())
+		return copyErr
+	}
+	if h := res.Header.Get("Last-Modified"); h != "" {
+		if t, err := http.ParseTime(h); err == nil {
+			os.Chtimes(f.Name(), t, t)
+		}
+	}
+	if err := os.Rename(f.Name(), targetFile); err != nil {
+		os.Remove(f.Name())
 		return err
 	}
 	return nil

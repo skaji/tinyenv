@@ -20,7 +20,7 @@ type Node struct {
 const nodeVersionsURL = "https://nodejs.org/dist/index.json"
 
 // version, version, os, arch
-const nodeAssetURL = "https://nodejs.org/dist/%s/node-%s-%s-%s.tar.gz"
+const nodeAssetURL = "https://nodejs.org/dist/%s/node-%s-%s-%s.tar.xz"
 
 var nodeOSArch = &OSArch{
 	Linux:  "linux",
