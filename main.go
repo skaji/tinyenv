@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	_ "embed"
 	"errors"
 	"fmt"
 	"os"
@@ -33,16 +32,36 @@ Examples:
   ❯ tinyenv python install -l
   ❯ tinyenv python install 3.9.19+20240814
   ❯ tinyenv python install latest
-  ❯ tinyenv python global 3.12.5+20240814`
+  ❯ tinyenv python global 3.12.5+20240814
+`
 
-//go:embed share/completions.zsh
-var zshCompletions string
+var zshCompletions = `compctl -K _tinyenv tinyenv
+
+_tinyenv() {
+  local words completions
+  local lang cmd
+  read -cA words
+
+  if [[ ${#words} -eq 2 ]]; then
+    completions="$(tinyenv --completion1)"
+  elif [[ ${#words} -eq 3 ]]; then
+    completions="$(tinyenv --completion2)"
+  elif [[ ${#words} -eq 4 ]]; then
+    lang=$words[2]
+    cmd=$words[3]
+    if [[ $cmd = global ]]; then
+      completions="$(tinyenv $lang versions)"
+    fi
+  fi
+  reply=("${(ps:\n:)completions}")
+}
+`
 
 func main() {
 	if len(os.Args) == 2 {
 		switch os.Args[1] {
 		case "-h", "--help":
-			fmt.Println(helpMessage)
+			fmt.Print(helpMessage)
 			os.Exit(1)
 		case "--version":
 			fmt.Println(version)
