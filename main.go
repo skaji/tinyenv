@@ -15,7 +15,12 @@ import (
 
 var version = "dev"
 
-var helpMessage = `Usage: tinyenv LANGUAGE COMMAND...
+var helpMessage = `Usage:
+  ❯ tinyenv GLOBAL_COMMAND...
+  ❯ tinyenv LANGUAGE COMMAND...
+
+Global Commands:
+  version, versions
 
 Languages:
   go, java, node, perl, python, raku, ruby
@@ -24,10 +29,11 @@ Commands:
   global, install, reahsh, version, versions
 
 Examples:
-  > tinyenv python install -l
-  > tinyenv python install 3.9.19+20240814
-  > tinyenv python install latest
-  > tinyenv python global 3.12.5+20240814`
+  ❯ tinyenv versions
+  ❯ tinyenv python install -l
+  ❯ tinyenv python install 3.9.19+20240814
+  ❯ tinyenv python install latest
+  ❯ tinyenv python global 3.12.5+20240814`
 
 //go:embed share/completions.zsh
 var zshCompletions string
@@ -44,12 +50,14 @@ func main() {
 		case "zsh-completions":
 			fmt.Print(zshCompletions)
 			os.Exit(0)
-		case "languages":
+		case "--completion1":
 			for _, l := range language.All {
 				fmt.Println(l)
 			}
+			fmt.Println("version")
+			fmt.Println("versions")
 			os.Exit(0)
-		case "commands":
+		case "--completion2":
 			fmt.Println("global")
 			fmt.Println("install")
 			fmt.Println("rehash")
@@ -58,7 +66,7 @@ func main() {
 			os.Exit(0)
 		}
 	}
-	if len(os.Args) < 3 && !(len(os.Args) == 2 && os.Args[1] == "root") {
+	if len(os.Args) < 3 && !(len(os.Args) == 2 && (os.Args[1] == "root" || os.Args[1] == "versions" || os.Args[1] == "version")) {
 		fmt.Fprintln(os.Stderr, "invalid arguments")
 		os.Exit(1)
 	}
@@ -72,8 +80,34 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	if os.Args[1] == "root" {
+	switch os.Args[1] {
+	case "root":
 		fmt.Println(root)
+		os.Exit(0)
+	case "version":
+		for _, l := range language.All {
+			lang := &language.Language{Name: l, Root: filepath.Join(root, l)}
+			if version, err := lang.Version(); err == nil {
+				fmt.Printf("%s %s\n", l, version)
+			}
+		}
+		os.Exit(0)
+	case "versions":
+		for _, l := range language.All {
+			lang := &language.Language{Name: l, Root: filepath.Join(root, l)}
+			versions, err := lang.Versions()
+			if err != nil {
+				continue
+			}
+			version, _ := lang.Version()
+			for _, v := range versions {
+				mark := "  "
+				if v == version {
+					mark = "* "
+				}
+				fmt.Printf("%s%s %s\n", mark, l, v)
+			}
+		}
 		os.Exit(0)
 	}
 

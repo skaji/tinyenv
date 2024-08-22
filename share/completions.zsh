@@ -6,9 +6,9 @@ _tinyenv() {
   read -cA words
 
   if [[ ${#words} -eq 2 ]]; then
-    completions="$(tinyenv languages)"
+    completions="$(tinyenv --completion1)"
   elif [[ ${#words} -eq 3 ]]; then
-    completions="$(tinyenv commands)"
+    completions="$(tinyenv --completion2)"
   elif [[ ${#words} -eq 4 ]]; then
     lang=$words[2]
     cmd=$words[3]
