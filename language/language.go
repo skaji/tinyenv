@@ -15,6 +15,7 @@ import (
 var All = []string{
 	"go",
 	"java",
+	"node",
 	"perl",
 	"python",
 	"raku",

@@ -50,7 +50,7 @@ _tinyenv() {
     lang=$words[2]
     cmd=$words[3]
     if [[ $cmd = global ]]; then
-      completions="$(tinyenv $lang versions)"
+      completions="$(tinyenv $lang versions --bare)"
     fi
   fi
   reply=("${(ps:\n:)completions}")
@@ -150,7 +150,12 @@ func main() {
 				return err
 			}
 			current, _ := lang.Version()
+			bare := len(args) > 0 && args[0] == "--bare"
 			for _, v := range vs {
+				if bare {
+					fmt.Println(v)
+					continue
+				}
 				mark := "  "
 				if v == current {
 					mark = "* "
