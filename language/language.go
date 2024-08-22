@@ -12,6 +12,15 @@ import (
 	"golang.org/x/mod/semver"
 )
 
+var All = []string{
+	"go",
+	"java",
+	"perl",
+	"python",
+	"raku",
+	"ruby",
+}
+
 type Language struct {
 	Name string
 	Root string
@@ -140,6 +149,8 @@ func (l *Language) Installer() Installer {
 		return &Perl{Root: l.Root}
 	case "python":
 		return &Python{Root: l.Root}
+	case "raku":
+		return &Raku{Root: l.Root}
 	default:
 		return nil
 	}

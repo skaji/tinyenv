@@ -6,9 +6,9 @@ _tinyenv() {
   read -cA words
 
   if [[ ${#words} -eq 2 ]]; then
-    completions="$(printf "go\njava\nnode\nperl\npython\nruby")"
+    completions="$(tinyenv languages)"
   elif [[ ${#words} -eq 3 ]]; then
-    completions="$(printf "global\ninit\ninstall\nreahsh\nversion\nversions")"
+    completions="$(tinyenv commands)"
   elif [[ ${#words} -eq 4 ]]; then
     lang=$words[2]
     cmd=$words[3]

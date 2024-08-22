@@ -18,7 +18,7 @@ var version = "dev"
 var helpMessage = `Usage: tinyenv LANGUAGE COMMAND...
 
 Languages:
-  go, java, node, perl, python, ruby
+  go, java, node, perl, python, raku, ruby
 
 Commands:
   global, install, reahsh, version, versions
@@ -33,17 +33,30 @@ Examples:
 var zshCompletions string
 
 func main() {
-	if len(os.Args) == 2 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
-		fmt.Println(helpMessage)
-		os.Exit(1)
-	}
-	if len(os.Args) == 2 && os.Args[1] == "--version" {
-		fmt.Println(version)
-		os.Exit(0)
-	}
-	if len(os.Args) == 2 && os.Args[1] == "zsh-completions" {
-		fmt.Print(zshCompletions)
-		os.Exit(0)
+	if len(os.Args) == 2 {
+		switch os.Args[1] {
+		case "-h", "--help":
+			fmt.Println(helpMessage)
+			os.Exit(1)
+		case "--version":
+			fmt.Println(version)
+			os.Exit(0)
+		case "zsh-completions":
+			fmt.Print(zshCompletions)
+			os.Exit(0)
+		case "languages":
+			for _, l := range language.All {
+				fmt.Println(l)
+			}
+			os.Exit(0)
+		case "commands":
+			fmt.Println("global")
+			fmt.Println("install")
+			fmt.Println("rehash")
+			fmt.Println("version")
+			fmt.Println("versions")
+			os.Exit(0)
+		}
 	}
 	if len(os.Args) < 3 && !(len(os.Args) == 2 && os.Args[1] == "root") {
 		fmt.Fprintln(os.Stderr, "invalid arguments")
@@ -65,10 +78,9 @@ func main() {
 	}
 
 	var lang *language.Language
-	switch l := os.Args[1]; l {
-	case "perl", "node", "go", "java", "ruby", "python":
+	if l := os.Args[1]; slices.Contains(language.All, l) {
 		lang = &language.Language{Name: l, Root: filepath.Join(root, l)}
-	default:
+	} else {
 		fmt.Fprintln(os.Stderr, "unknown language: "+l)
 		os.Exit(1)
 	}
