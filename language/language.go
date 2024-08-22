@@ -151,6 +151,8 @@ func (l *Language) Installer() Installer {
 		return &Python{Root: l.Root}
 	case "raku":
 		return &Raku{Root: l.Root}
+	case "ruby":
+		return &Ruby{Root: l.Root}
 	default:
 		return nil
 	}

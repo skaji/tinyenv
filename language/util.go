@@ -3,6 +3,7 @@ package language
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -43,6 +44,10 @@ func ExistsFS(target string) bool {
 }
 
 func Untar(tarball string, targetDir string) error {
+	return UntarStrip(tarball, targetDir, 1)
+}
+
+func UntarStrip(tarball string, targetDir string, strip int) error {
 	if _, err := os.Stat(targetDir); err == nil {
 		return errors.New("already exists " + targetDir)
 	}
@@ -62,7 +67,7 @@ func Untar(tarball string, targetDir string) error {
 		tarball,
 		"-C",
 		targetDir,
-		"--strip-components=1",
+		fmt.Sprintf("--strip-components=%d", strip),
 	)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
