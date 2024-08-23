@@ -54,34 +54,34 @@ func (g *Go) List(ctx context.Context, all bool) ([]string, error) {
 	return out, nil
 }
 
-func (g *Go) Install(ctx context.Context, version string) error {
+func (g *Go) Install(ctx context.Context, version string) (string, error) {
 	if version == "latest" {
 		versions, err := g.List(ctx, false)
 		if err != nil {
-			return err
+			return "", err
 		}
 		version = versions[0]
 	}
 	targetDir := filepath.Join(g.Root, "versions", version)
 	if ExistsFS(targetDir) {
-		return errors.New("already exists " + targetDir)
+		return "", errors.New("already exists " + targetDir)
 	}
 
 	url := fmt.Sprintf(goAssetURL, version, goOSArch.OS(), goOSArch.Arch())
 	cacheFile := filepath.Join(g.Root, "cache", filepath.Base(url))
 	if err := os.MkdirAll(filepath.Join(g.Root, "cache"), 0755); err != nil {
-		return err
+		return "", err
 	}
 
 	fmt.Println("---> Downloading " + url)
 	if err := HTTPMirror(ctx, url, cacheFile); err != nil {
-		return err
+		return "", err
 	}
 	fmt.Println("---> Extracting " + cacheFile)
 	if err := Untar(cacheFile, targetDir); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return version, nil
 }
 
 var _ Installer = (*Go)(nil)

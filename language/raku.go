@@ -75,10 +75,10 @@ func (r *Raku) List(ctx context.Context, all bool) ([]string, error) {
 	return out, nil
 }
 
-func (r *Raku) Install(ctx context.Context, version string) error {
+func (r *Raku) Install(ctx context.Context, version string) (string, error) {
 	assets, err := r.list(ctx)
 	if err != nil {
-		return err
+		return "", err
 	}
 	var asset *rakuAsset
 	if version == "latest" {
@@ -89,29 +89,29 @@ func (r *Raku) Install(ctx context.Context, version string) error {
 			return a.Version == version
 		})
 		if index == -1 {
-			return errors.New("invalid version: " + version)
+			return "", errors.New("invalid version: " + version)
 		}
 		asset = assets[index]
 	}
 
 	targetDir := filepath.Join(r.Root, "versions", version)
 	if ExistsFS(targetDir) {
-		return errors.New("already exists " + targetDir)
+		return "", errors.New("already exists " + targetDir)
 	}
 
 	url := asset.URL
 	cacheFile := filepath.Join(r.Root, "cache", filepath.Base(url))
 	if err := os.MkdirAll(filepath.Join(r.Root, "cache"), 0755); err != nil {
-		return err
+		return "", err
 	}
 
 	fmt.Println("---> Downloading " + url)
 	if err := HTTPMirror(ctx, url, cacheFile); err != nil {
-		return err
+		return "", err
 	}
 	fmt.Println("---> Extracting " + cacheFile)
 	if err := Untar(cacheFile, targetDir); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return version, nil
 }

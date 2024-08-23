@@ -28,46 +28,46 @@ func (r *Ruby) List(ctx context.Context, all bool) ([]string, error) {
 	return versions, nil
 }
 
-func (r *Ruby) Install(ctx context.Context, version string) error {
+func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
 	if runtime.GOOS == "linux" && runtime.GOARCH == "arm64" {
-		return errors.New("unsupported os/arch")
+		return "", errors.New("unsupported os/arch")
 	}
 
 	if !strings.HasPrefix(version, "portable-") {
-		return errors.New("invalid version: " + version)
+		return "", errors.New("invalid version: " + version)
 	}
 	if version == "latest" {
 		versions, err := r.List(ctx, true)
 		if err != nil {
-			return err
+			return "", err
 		}
 		version = versions[0]
 	}
 
 	targetDir := filepath.Join(r.Root, "versions", version)
 	if ExistsFS(targetDir) {
-		return errors.New("already exists " + targetDir)
+		return "", errors.New("already exists " + targetDir)
 	}
 
 	url, err := r.url(ctx, version)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	cacheFile := filepath.Join(r.Root, "cache", filepath.Base(url))
 	if err := os.MkdirAll(filepath.Join(r.Root, "cache"), 0755); err != nil {
-		return err
+		return "", err
 	}
 
 	fmt.Println("---> Downloading " + url)
 	if err := HTTPMirror(ctx, url, cacheFile); err != nil {
-		return err
+		return "", err
 	}
 	fmt.Println("---> Extracting " + cacheFile)
 	if err := UntarStrip(cacheFile, targetDir, 2); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return version, nil
 }
 
 func (r *Ruby) url(ctx context.Context, version string) (string, error) {

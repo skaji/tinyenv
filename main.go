@@ -172,15 +172,15 @@ func main() {
 			if len(args) == 0 {
 				return errors.New("need version argument.")
 			}
-			v := args[0]
-			vs, err := lang.Versions()
+			version := args[0]
+			versions, err := lang.Versions()
 			if err != nil {
 				return err
 			}
-			if !slices.Contains(vs, v) {
-				return errors.New("invalid version: " + v)
+			if !slices.Contains(versions, version) {
+				return errors.New("invalid version: " + version)
 			}
-			if err := lang.SetVersion(v); err != nil {
+			if err := lang.SetVersion(version); err != nil {
 				return err
 			}
 			return lang.Rehash()
@@ -204,8 +204,23 @@ func main() {
 				}
 				return nil
 			}
+			global := false
+			if args[0] == "-g" || args[0] == "--global" {
+				global = true
+				args = args[1:]
+			}
+			if len(args) == 0 {
+				return errors.New("need version argument.")
+			}
 			version := args[0]
-			return installer.Install(context.Background(), version)
+			version2, err := installer.Install(context.Background(), version)
+			if err != nil || !global {
+				return err
+			}
+			if err := lang.SetVersion(version2); err != nil {
+				return err
+			}
+			return lang.Rehash()
 		default:
 			plugin := "tinyenv-" + command
 			path, err := exec.LookPath(plugin)

@@ -61,40 +61,40 @@ func (p *Python) List(ctx context.Context, all bool) ([]string, error) {
 	return out, nil
 }
 
-func (p *Python) Install(ctx context.Context, version string) error {
+func (p *Python) Install(ctx context.Context, version string) (string, error) {
 	if version == "latest" {
 		versions, err := p.List(ctx, false)
 		if err != nil {
-			return err
+			return "", err
 		}
 		version = versions[0]
 	}
 
 	pythonVersion, tag, ok := strings.Cut(version, "+")
 	if !ok {
-		return errors.New("invalid version: " + version)
+		return "", errors.New("invalid version: " + version)
 	}
 	targetDir := filepath.Join(p.Root, "versions", version)
 	if ExistsFS(targetDir) {
-		return errors.New("already exists " + targetDir)
+		return "", errors.New("already exists " + targetDir)
 	}
 
 	url := fmt.Sprintf(pythonAssetURL,
 		tag, pythonVersion, tag, pythonOSArch.Arch(), pythonOSArch.OS())
 	cacheFile := filepath.Join(p.Root, "cache", filepath.Base(url))
 	if err := os.MkdirAll(filepath.Join(p.Root, "cache"), 0755); err != nil {
-		return err
+		return "", err
 	}
 
 	fmt.Println("---> Downloading " + url)
 	if err := HTTPMirror(ctx, url, cacheFile); err != nil {
-		return err
+		return "", err
 	}
 	fmt.Println("---> Extracting " + cacheFile)
 	if err := Untar(cacheFile, targetDir); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return version, nil
 }
 
 var _ Installer = (*Python)(nil)

@@ -60,34 +60,34 @@ func (n *Node) List(ctx context.Context, all bool) ([]string, error) {
 	return out2[:10], nil
 }
 
-func (n *Node) Install(ctx context.Context, version string) error {
+func (n *Node) Install(ctx context.Context, version string) (string, error) {
 	if version == "latest" {
 		versions, err := n.List(ctx, false)
 		if err != nil {
-			return err
+			return "", err
 		}
 		version = versions[0]
 	}
 	targetDir := filepath.Join(n.Root, "versions", version)
 	if ExistsFS(targetDir) {
-		return errors.New("already exists " + targetDir)
+		return "", errors.New("already exists " + targetDir)
 	}
 
 	url := fmt.Sprintf(nodeAssetURL, version, version, nodeOSArch.OS(), nodeOSArch.Arch())
 	cacheFile := filepath.Join(n.Root, "cache", filepath.Base(url))
 	if err := os.MkdirAll(filepath.Join(n.Root, "cache"), 0755); err != nil {
-		return err
+		return "", err
 	}
 
 	fmt.Println("---> Downloading " + url)
 	if err := HTTPMirror(ctx, url, cacheFile); err != nil {
-		return err
+		return "", err
 	}
 	fmt.Println("---> Extracting " + cacheFile)
 	if err := Untar(cacheFile, targetDir); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return version, nil
 }
 
 var _ Installer = (*Node)(nil)

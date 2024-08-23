@@ -101,49 +101,49 @@ func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
 	return out3, nil
 }
 
-func (j *Java) Install(ctx context.Context, version string) error {
+func (j *Java) Install(ctx context.Context, version string) (string, error) {
 	if version == "latest" {
 		versions, err := j.List(ctx, false)
 		if err != nil {
-			return err
+			return "", err
 		}
 		version = versions[0]
 	}
 	targetDir := filepath.Join(j.Root, "versions", version)
 	if ExistsFS(targetDir) {
-		return errors.New("already exists " + targetDir)
+		return "", errors.New("already exists " + targetDir)
 	}
 
 	url := fmt.Sprintf(javaAssetURL, version, javaOSArch.OS(), javaOSArch.Arch())
 	cacheFile := filepath.Join(j.Root, "cache", version+".tar.gz")
 	if err := os.MkdirAll(filepath.Join(j.Root, "cache"), 0755); err != nil {
-		return err
+		return "", err
 	}
 
 	fmt.Println("---> Downloading " + url)
 	if err := HTTPMirror(ctx, url, cacheFile); err != nil {
-		return err
+		return "", err
 	}
 
 	if javaOSArch.OS() == "linux" {
 		fmt.Println("---> Extracting " + cacheFile)
 		if err := Untar(cacheFile, targetDir); err != nil {
-			return err
+			return "", err
 		}
-		return nil
+		return version, nil
 	}
 
 	tempTargetDir := filepath.Join(j.Root, "versions", "_"+version)
 	defer os.RemoveAll(tempTargetDir)
 	fmt.Println("---> Extracting " + cacheFile)
 	if err := Untar(cacheFile, tempTargetDir); err != nil {
-		return err
+		return "", err
 	}
 	contentsHome := filepath.Join(tempTargetDir, "Contents", "Home")
 	if err := os.Rename(contentsHome, targetDir); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return version, nil
 }
 
 var _ Installer = (*Java)(nil)
