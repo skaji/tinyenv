@@ -33,15 +33,15 @@ func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
 		return "", errors.New("unsupported os/arch")
 	}
 
-	if !strings.HasPrefix(version, "portable-") {
-		return "", errors.New("invalid version: " + version)
-	}
 	if version == "latest" {
 		versions, err := r.List(ctx, true)
 		if err != nil {
 			return "", err
 		}
 		version = versions[0]
+	}
+	if !strings.HasPrefix(version, "portable-") {
+		return "", errors.New("invalid version: " + version)
 	}
 
 	targetDir := filepath.Join(r.Root, "versions", version)
