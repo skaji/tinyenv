@@ -227,7 +227,7 @@ func main() {
 			if err != nil {
 				return errors.New("invalid command: " + command)
 			}
-			args2 := append([]string{os.Args[1]}, args...)
+			args2 := append([]string{os.Args[1], command}, args...)
 			cmd := exec.Command(path, args2...)
 			cmd.Env = append(slices.Clone(os.Environ()), "TINYENV_ROOT="+root)
 			cmd.Stdin = os.Stdin
