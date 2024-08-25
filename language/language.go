@@ -158,3 +158,36 @@ func (l *Language) Installer() Installer {
 		return nil
 	}
 }
+
+func (l *Language) Reset(version string) error {
+	current, _ := l.Version()
+	if version == "-" {
+		if current == "" {
+			return errors.New("no version set")
+		}
+		version = current
+	}
+	targetDir := filepath.Join(l.Root, "versions", version)
+	if !ExistsFS(targetDir) {
+		return errors.New("invalid version: " + version)
+	}
+	cacheFile := filepath.Join(l.Root, "cache", version+".tar.gz")
+	if !ExistsFS(cacheFile) {
+		cacheFile = filepath.Join(l.Root, "cache", version+".tar.xz")
+		if !ExistsFS(cacheFile) {
+			return errors.New("no cache file for " + version)
+		}
+	}
+	fmt.Println("---> Removing " + targetDir)
+	if err := os.RemoveAll(targetDir); err != nil {
+		return err
+	}
+	fmt.Println("---> Extracting " + cacheFile)
+	if err := Untar(cacheFile, targetDir); err != nil {
+		return err
+	}
+	if version == current {
+		return l.Rehash()
+	}
+	return nil
+}

@@ -25,7 +25,7 @@ Languages:
   go, java, node, perl, python, raku, ruby
 
 Commands:
-  global, install, reahsh, version, versions
+  global, install, reahsh, reset, version, versions
 
 Examples:
   ❯ tinyenv versions
@@ -80,6 +80,7 @@ func main() {
 			fmt.Println("global")
 			fmt.Println("install")
 			fmt.Println("rehash")
+			fmt.Println("reset")
 			fmt.Println("version")
 			fmt.Println("versions")
 			os.Exit(0)
@@ -221,6 +222,12 @@ func main() {
 				return err
 			}
 			return lang.Rehash()
+		case "reset":
+			if len(args) == 0 {
+				return errors.New("need version argument.")
+			}
+			version := args[0]
+			return lang.Reset(version)
 		default:
 			plugin := "tinyenv-" + command
 			path, err := exec.LookPath(plugin)
