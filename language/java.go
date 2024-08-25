@@ -75,7 +75,7 @@ func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
 	var out2 []string
 	for _, version := range out {
 		if version != "" {
-			out2 = append(out2, version)
+			out2 = append(out2, "eclipse-temurin-"+version)
 		}
 	}
 	if all {
@@ -83,7 +83,7 @@ func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
 	}
 	majors := map[int]string{}
 	for _, version := range out2 {
-		m := regexp.MustCompile(`^jdk-?(\d+)`).FindStringSubmatch(version)
+		m := regexp.MustCompile(`^eclipse-temurin-jdk-?(\d+)`).FindStringSubmatch(version)
 		if m != nil {
 			if major, err := strconv.Atoi(m[1]); err == nil {
 				if _, ok := majors[major]; !ok {
@@ -109,12 +109,16 @@ func (j *Java) Install(ctx context.Context, version string) (string, error) {
 		}
 		version = versions[0]
 	}
+	if !strings.HasPrefix(version, "eclipse-temurin-") {
+		return "", errors.New("invalid version: " + version)
+	}
+
 	targetDir := filepath.Join(j.Root, "versions", version)
 	if ExistsFS(targetDir) {
 		return "", errors.New("already exists " + targetDir)
 	}
 
-	url := fmt.Sprintf(javaAssetURL, version, javaOSArch.OS(), javaOSArch.Arch())
+	url := fmt.Sprintf(javaAssetURL, strings.TrimPrefix(version, "eclipse-temurin-"), javaOSArch.OS(), javaOSArch.Arch())
 	cacheFile := filepath.Join(j.Root, "cache", version+".tar.gz")
 	if err := os.MkdirAll(filepath.Join(j.Root, "cache"), 0755); err != nil {
 		return "", err
@@ -125,25 +129,25 @@ func (j *Java) Install(ctx context.Context, version string) (string, error) {
 		return "", err
 	}
 
-	if javaOSArch.OS() == "linux" {
-		fmt.Println("---> Extracting " + cacheFile)
-		if err := Untar(cacheFile, targetDir); err != nil {
-			return "", err
-		}
-		return version, nil
-	}
-
-	tempTargetDir := filepath.Join(j.Root, "versions", "_"+version)
-	defer os.RemoveAll(tempTargetDir)
 	fmt.Println("---> Extracting " + cacheFile)
-	if err := Untar(cacheFile, tempTargetDir); err != nil {
-		return "", err
-	}
-	contentsHome := filepath.Join(tempTargetDir, "Contents", "Home")
-	if err := os.Rename(contentsHome, targetDir); err != nil {
+	if err := javaUntar(cacheFile, targetDir); err != nil {
 		return "", err
 	}
 	return version, nil
+}
+
+func javaUntar(cacheFile string, targetDir string) error {
+	if javaOSArch.OS() == "linux" {
+		return Untar(cacheFile, targetDir)
+	}
+
+	tempTargetDir := targetDir + "_tmp"
+	defer os.RemoveAll(tempTargetDir)
+	if err := Untar(cacheFile, tempTargetDir); err != nil {
+		return err
+	}
+	contentsHome := filepath.Join(tempTargetDir, "Contents", "Home")
+	return os.Rename(contentsHome, targetDir)
 }
 
 var _ Installer = (*Java)(nil)

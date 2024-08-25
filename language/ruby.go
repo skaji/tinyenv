@@ -23,7 +23,7 @@ func (r *Ruby) List(ctx context.Context, all bool) ([]string, error) {
 	}
 	versions := make([]string, len(tags))
 	for i, tag := range tags {
-		versions[i] = "portable-" + tag
+		versions[i] = "homebrew-portable-" + tag
 	}
 	return versions, nil
 }
@@ -40,7 +40,7 @@ func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
 		}
 		version = versions[0]
 	}
-	if !strings.HasPrefix(version, "portable-") {
+	if !strings.HasPrefix(version, "homebrew-portable-") {
 		return "", errors.New("invalid version: " + version)
 	}
 
@@ -71,7 +71,7 @@ func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
 }
 
 func (r *Ruby) url(ctx context.Context, version string) (string, error) {
-	tag := strings.TrimPrefix(version, "portable-")
+	tag := strings.TrimPrefix(version, "homebrew-portable-")
 	assets, err := (&GitHub{}).Assets(ctx, rubyURL, tag)
 	if err != nil {
 		return "", err

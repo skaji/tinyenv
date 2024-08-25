@@ -183,8 +183,14 @@ func (l *Language) Reset(version string) error {
 		return err
 	}
 	fmt.Println("---> Extracting " + cacheFile)
-	if err := Untar(cacheFile, targetDir); err != nil {
-		return err
+	if l.Name == "java" {
+		if err := javaUntar(cacheFile, targetDir); err != nil {
+			return err
+		}
+	} else {
+		if err := Untar(cacheFile, targetDir); err != nil {
+			return err
+		}
 	}
 	if version == current {
 		return l.Rehash()
