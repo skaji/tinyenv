@@ -81,7 +81,7 @@ func (p *Python) Install(ctx context.Context, version string) (string, error) {
 
 	url := fmt.Sprintf(pythonAssetURL,
 		tag, pythonVersion, tag, pythonOSArch.Arch(), pythonOSArch.OS())
-	cacheFile := filepath.Join(p.Root, "cache", filepath.Base(url))
+	cacheFile := filepath.Join(p.Root, "cache", version+".tar.gz")
 	if err := os.MkdirAll(filepath.Join(p.Root, "cache"), 0755); err != nil {
 		return "", err
 	}

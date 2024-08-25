@@ -74,7 +74,7 @@ func (n *Node) Install(ctx context.Context, version string) (string, error) {
 	}
 
 	url := fmt.Sprintf(nodeAssetURL, version, version, nodeOSArch.OS(), nodeOSArch.Arch())
-	cacheFile := filepath.Join(n.Root, "cache", filepath.Base(url))
+	cacheFile := filepath.Join(n.Root, "cache", version+".tar.xz")
 	if err := os.MkdirAll(filepath.Join(n.Root, "cache"), 0755); err != nil {
 		return "", err
 	}

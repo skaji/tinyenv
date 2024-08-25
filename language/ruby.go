@@ -54,7 +54,7 @@ func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
 		return "", err
 	}
 
-	cacheFile := filepath.Join(r.Root, "cache", filepath.Base(url))
+	cacheFile := filepath.Join(r.Root, "cache", version+".tar.gz")
 	if err := os.MkdirAll(filepath.Join(r.Root, "cache"), 0755); err != nil {
 		return "", err
 	}
