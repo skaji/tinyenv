@@ -20,6 +20,7 @@ var All = []string{
 	"python",
 	"raku",
 	"ruby",
+	"solr",
 }
 
 type Language struct {
@@ -154,6 +155,8 @@ func (l *Language) Installer() Installer {
 		return &Raku{Root: l.Root}
 	case "ruby":
 		return &Ruby{Root: l.Root}
+	case "solr":
+		return &Solr{Root: l.Root}
 	default:
 		return nil
 	}

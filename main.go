@@ -23,6 +23,7 @@ Global Commands:
 
 Languages:
   go, java, node, perl, python, raku, ruby
+  solr
 
 Commands:
   global, install, reahsh, reset, version, versions
