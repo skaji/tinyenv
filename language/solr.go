@@ -69,3 +69,7 @@ func (s *Solr) Install(ctx context.Context, version string) (string, error) {
 	}
 	return version, nil
 }
+
+func (s *Solr) BinDirs() []string {
+	return []string{"bin"}
+}

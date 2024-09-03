@@ -115,3 +115,7 @@ func (r *Raku) Install(ctx context.Context, version string) (string, error) {
 	}
 	return version, nil
 }
+
+func (r *Raku) BinDirs() []string {
+	return []string{"bin", filepath.Join("share", "perl6", "site", "bin")}
+}

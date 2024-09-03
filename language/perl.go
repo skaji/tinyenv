@@ -90,4 +90,8 @@ func (p *Perl) Install(ctx context.Context, version string) (string, error) {
 	return version, nil
 }
 
+func (p *Perl) BinDirs() []string {
+	return []string{"bin"}
+}
+
 var _ Installer = (*Perl)(nil)

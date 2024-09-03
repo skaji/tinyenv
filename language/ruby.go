@@ -96,3 +96,7 @@ func (r *Ruby) url(ctx context.Context, version string) (string, error) {
 	}
 	return url, nil
 }
+
+func (r *Ruby) BinDirs() []string {
+	return []string{"bin"}
+}

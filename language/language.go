@@ -73,33 +73,11 @@ func (l *Language) Init() error {
 }
 
 func (l *Language) Rehash() error {
-	version, err := l.Version()
-	if err != nil {
-		return err
-	}
-	entries, err := os.ReadDir(filepath.Join(l.Root, "versions", version, "bin"))
-	if err != nil {
-		return err
-	}
-	var exeFiles []string
-	for _, e := range entries {
-		if e.IsDir() {
-			continue
-		}
-		info, err := e.Info()
-		if err != nil {
-			return err
-		}
-		if info.Mode()&0111 != 0 {
-			exeFiles = append(exeFiles, e.Name())
-		}
-	}
-
+	// remove old exeFiles first
 	header := fmt.Sprintf("#!/bin/sh\n# %s\n", l.Name)
 	headerBytes := []byte(header)
 	headerLen := len(headerBytes)
 	{
-		// remove old exeFiles
 		rootBinDir := filepath.Join(filepath.Dir(l.Root), "bin")
 		entries, err := os.ReadDir(rootBinDir)
 		if err != nil {
@@ -128,12 +106,36 @@ func (l *Language) Rehash() error {
 		}
 	}
 
-	for _, exeFile := range exeFiles {
-		source := filepath.Join(l.Root, "versions", version, "bin", exeFile)
-		target := filepath.Join(filepath.Dir(l.Root), "bin", exeFile)
-		content := header + fmt.Sprintf(`exec "%s" "$@"`, source) + "\n"
-		if err := os.WriteFile(target, []byte(content), 0755); err != nil {
+	version, err := l.Version()
+	if err != nil {
+		return err
+	}
+
+	for _, binDir := range l.Installer().BinDirs() {
+		entries, err := os.ReadDir(filepath.Join(l.Root, "versions", version, binDir))
+		if err != nil {
 			return err
+		}
+		var exeFiles []string
+		for _, e := range entries {
+			if e.IsDir() {
+				continue
+			}
+			info, err := e.Info()
+			if err != nil {
+				return err
+			}
+			if info.Mode()&0111 != 0 {
+				exeFiles = append(exeFiles, e.Name())
+			}
+		}
+		for _, exeFile := range exeFiles {
+			source := filepath.Join(l.Root, "versions", version, binDir, exeFile)
+			target := filepath.Join(filepath.Dir(l.Root), "bin", exeFile)
+			content := header + fmt.Sprintf(`exec "%s" "$@"`, source) + "\n"
+			if err := os.WriteFile(target, []byte(content), 0755); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -158,7 +160,7 @@ func (l *Language) Installer() Installer {
 	case "solr":
 		return &Solr{Root: l.Root}
 	default:
-		return nil
+		panic("unknown language: " + l.Name)
 	}
 }
 

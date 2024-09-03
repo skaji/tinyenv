@@ -97,4 +97,8 @@ func (p *Python) Install(ctx context.Context, version string) (string, error) {
 	return version, nil
 }
 
+func (p *Python) BinDirs() []string {
+	return []string{"bin"}
+}
+
 var _ Installer = (*Python)(nil)

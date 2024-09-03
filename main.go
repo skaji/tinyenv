@@ -233,13 +233,10 @@ func main() {
 		case "rehash":
 			return lang.Rehash()
 		case "install":
-			installer := lang.Installer()
-			if installer == nil {
-				return errors.New("no installer for " + lang.Name)
-			}
 			if len(args) == 0 {
 				return errors.New("need version argument.")
 			}
+			installer := lang.Installer()
 			if args[0] == "-l" || args[0] == "-L" {
 				versions, err := installer.List(context.Background(), args[0] == "-L")
 				if err != nil {

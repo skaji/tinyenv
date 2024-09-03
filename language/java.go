@@ -150,4 +150,8 @@ func javaUntar(cacheFile string, targetDir string) error {
 	return os.Rename(contentsHome, targetDir)
 }
 
+func (j *Java) BinDirs() []string {
+	return []string{"bin"}
+}
+
 var _ Installer = (*Java)(nil)
