@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"sync"
 
 	"github.com/skaji/tinyenv/language"
 )
@@ -19,7 +20,7 @@ var helpMessage = `Usage:
   ❯ tinyenv LANGUAGE COMMAND...
 
 Global Commands:
-  version, versions
+  latest, version, versions
 
 Languages:
   go, java, node, perl, python, raku, ruby
@@ -74,6 +75,7 @@ func main() {
 			for _, l := range language.All {
 				fmt.Println(l)
 			}
+			fmt.Println("latest")
 			fmt.Println("version")
 			fmt.Println("versions")
 			os.Exit(0)
@@ -87,7 +89,9 @@ func main() {
 			os.Exit(0)
 		}
 	}
-	if len(os.Args) < 3 && !(len(os.Args) == 2 && (os.Args[1] == "root" || os.Args[1] == "versions" || os.Args[1] == "version")) {
+	if len(os.Args) < 3 &&
+		!(len(os.Args) == 2 &&
+			(os.Args[1] == "root" || os.Args[1] == "versions" || os.Args[1] == "version" || os.Args[1] == "latest")) {
 		fmt.Fprintln(os.Stderr, "invalid arguments")
 		os.Exit(1)
 	}
@@ -128,6 +132,46 @@ func main() {
 				}
 				fmt.Printf("%s%s %s\n", mark, l, v)
 			}
+		}
+		os.Exit(0)
+	case "latest":
+		type result struct {
+			Language string `json:"language"`
+			Latest   string `json:"latest"`
+			Have     bool   `json:"have"`
+		}
+		results := make([]*result, len(language.All))
+		var wg sync.WaitGroup
+		wg.Add(len(language.All))
+		for i, l := range language.All {
+			go func() {
+				defer wg.Done()
+				lang := &language.Language{Name: l, Root: filepath.Join(root, l)}
+				versions, err := lang.Installer().List(context.Background(), false)
+				if err != nil {
+					results[i] = &result{
+						Language: l,
+						Latest:   "error: " + err.Error(),
+						Have:     false,
+					}
+					return
+				}
+				latest := versions[0]
+				locals, _ := lang.Versions()
+				have := slices.Contains(locals, latest)
+				results[i] = &result{
+					Language: l,
+					Latest:   latest,
+					Have:     have,
+				}
+			}()
+		}
+		wg.Wait()
+		format := "%-5v  %-8s  %s\n"
+		fmt.Printf(format, "have?", "language", "latest")
+		fmt.Printf(format, "-----", "--------", "------")
+		for _, res := range results {
+			fmt.Printf(format, res.Have, res.Language, res.Latest)
 		}
 		os.Exit(0)
 	}
