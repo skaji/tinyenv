@@ -58,6 +58,14 @@ func (l *Language) Specific() Specific {
 	}
 }
 
+func (l *Language) List(ctx context.Context, all bool) ([]string, error) {
+	return l.Specific().List(ctx, all)
+}
+
+func (l *Language) Install(ctx context.Context, version string) (string, error) {
+	return l.Specific().Install(ctx, version)
+}
+
 func (l *Language) Version() (string, error) {
 	b, err := os.ReadFile(filepath.Join(l.Root, "version"))
 	if err != nil {
