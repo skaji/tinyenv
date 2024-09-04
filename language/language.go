@@ -1,6 +1,7 @@
 package language
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -26,6 +27,35 @@ var All = []string{
 type Language struct {
 	Name string
 	Root string
+}
+
+type Specific interface {
+	List(ctx context.Context, all bool) ([]string, error)
+	Install(ctx context.Context, version string) (string, error)
+	BinDirs() []string
+}
+
+func (l *Language) Specific() Specific {
+	switch l.Name {
+	case "go":
+		return &Go{Root: l.Root}
+	case "java":
+		return &Java{Root: l.Root}
+	case "node":
+		return &Node{Root: l.Root}
+	case "perl":
+		return &Perl{Root: l.Root}
+	case "python":
+		return &Python{Root: l.Root}
+	case "raku":
+		return &Raku{Root: l.Root}
+	case "ruby":
+		return &Ruby{Root: l.Root}
+	case "solr":
+		return &Solr{Root: l.Root}
+	default:
+		panic("unknown language: " + l.Name)
+	}
 }
 
 func (l *Language) Version() (string, error) {
@@ -111,7 +141,7 @@ func (l *Language) Rehash() error {
 		return err
 	}
 
-	for _, binDir := range l.Installer().BinDirs() {
+	for _, binDir := range l.Specific().BinDirs() {
 		entries, err := os.ReadDir(filepath.Join(l.Root, "versions", version, binDir))
 		if err != nil {
 			return err
@@ -139,29 +169,6 @@ func (l *Language) Rehash() error {
 		}
 	}
 	return nil
-}
-
-func (l *Language) Installer() Installer {
-	switch l.Name {
-	case "go":
-		return &Go{Root: l.Root}
-	case "java":
-		return &Java{Root: l.Root}
-	case "node":
-		return &Node{Root: l.Root}
-	case "perl":
-		return &Perl{Root: l.Root}
-	case "python":
-		return &Python{Root: l.Root}
-	case "raku":
-		return &Raku{Root: l.Root}
-	case "ruby":
-		return &Ruby{Root: l.Root}
-	case "solr":
-		return &Solr{Root: l.Root}
-	default:
-		panic("unknown language: " + l.Name)
-	}
 }
 
 func (l *Language) Reset(version string) error {

@@ -153,5 +153,3 @@ func javaUntar(cacheFile string, targetDir string) error {
 func (j *Java) BinDirs() []string {
 	return []string{"bin"}
 }
-
-var _ Installer = (*Java)(nil)

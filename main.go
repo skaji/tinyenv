@@ -147,7 +147,7 @@ func main() {
 			go func() {
 				defer wg.Done()
 				lang := &language.Language{Name: l, Root: filepath.Join(root, l)}
-				versions, err := lang.Installer().List(context.Background(), false)
+				versions, err := lang.Specific().List(context.Background(), false)
 				if err != nil {
 					results[i] = &result{
 						Language: l,
@@ -236,9 +236,9 @@ func main() {
 			if len(args) == 0 {
 				return errors.New("need version argument.")
 			}
-			installer := lang.Installer()
+			specific := lang.Specific()
 			if args[0] == "-l" || args[0] == "-L" {
-				versions, err := installer.List(context.Background(), args[0] == "-L")
+				versions, err := specific.List(context.Background(), args[0] == "-L")
 				if err != nil {
 					return err
 				}
@@ -256,7 +256,7 @@ func main() {
 				return errors.New("need version argument.")
 			}
 			version := args[0]
-			version2, err := installer.Install(context.Background(), version)
+			version2, err := specific.Install(context.Background(), version)
 			if err != nil || !global {
 				return err
 			}

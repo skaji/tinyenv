@@ -93,5 +93,3 @@ func (n *Node) Install(ctx context.Context, version string) (string, error) {
 func (n *Node) BinDirs() []string {
 	return []string{"bin"}
 }
-
-var _ Installer = (*Node)(nil)

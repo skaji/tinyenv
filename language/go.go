@@ -87,5 +87,3 @@ func (g *Go) Install(ctx context.Context, version string) (string, error) {
 func (g *Go) BinDirs() []string {
 	return []string{"bin"}
 }
-
-var _ Installer = (*Go)(nil)
