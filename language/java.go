@@ -62,9 +62,7 @@ func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
 				return err
 			}
 			for j, release := range res.Releases {
-				if j < 20 {
-					out[i*loops+j] = release
-				}
+				out[i*20+j] = release
 			}
 			return nil
 		})
