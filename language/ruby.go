@@ -100,3 +100,7 @@ func (r *Ruby) url(ctx context.Context, version string) (string, error) {
 func (r *Ruby) BinDirs() []string {
 	return []string{"bin"}
 }
+
+func (r *Ruby) Untar(tarball string, targetDir string) error {
+	return Untar(tarball, targetDir)
+}

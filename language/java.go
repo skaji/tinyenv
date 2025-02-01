@@ -132,13 +132,17 @@ func (j *Java) Install(ctx context.Context, version string) (string, error) {
 	}
 
 	fmt.Println("---> Extracting " + cacheFile)
-	if err := javaUntar(cacheFile, targetDir); err != nil {
+	if err := j.Untar(cacheFile, targetDir); err != nil {
 		return "", err
 	}
 	return version, nil
 }
 
-func javaUntar(cacheFile string, targetDir string) error {
+func (j *Java) BinDirs() []string {
+	return []string{"bin"}
+}
+
+func (j *Java) Untar(cacheFile string, targetDir string) error {
 	if javaOSArch.OS() == "linux" {
 		return Untar(cacheFile, targetDir)
 	}
@@ -150,8 +154,4 @@ func javaUntar(cacheFile string, targetDir string) error {
 	}
 	contentsHome := filepath.Join(tempTargetDir, "Contents", "Home")
 	return os.Rename(contentsHome, targetDir)
-}
-
-func (j *Java) BinDirs() []string {
-	return []string{"bin"}
 }

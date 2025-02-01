@@ -33,6 +33,7 @@ type Specific interface {
 	List(ctx context.Context, all bool) ([]string, error)
 	Install(ctx context.Context, version string) (string, error)
 	BinDirs() []string
+	Untar(tarball string, targetDir string) error
 }
 
 func (l *Language) Specific() Specific {
@@ -203,14 +204,8 @@ func (l *Language) Reset(version string) error {
 		return err
 	}
 	fmt.Println("---> Extracting " + cacheFile)
-	if l.Name == "java" {
-		if err := javaUntar(cacheFile, targetDir); err != nil {
-			return err
-		}
-	} else {
-		if err := Untar(cacheFile, targetDir); err != nil {
-			return err
-		}
+	if err := l.Specific().Untar(cacheFile, targetDir); err != nil {
+		return err
 	}
 	if version == current {
 		return l.Rehash()

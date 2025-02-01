@@ -93,3 +93,7 @@ func (n *Node) Install(ctx context.Context, version string) (string, error) {
 func (n *Node) BinDirs() []string {
 	return []string{"bin"}
 }
+
+func (n *Node) Untar(tarball string, targetDir string) error {
+	return Untar(tarball, targetDir)
+}
