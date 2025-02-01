@@ -12,6 +12,7 @@ import (
 )
 
 type Raku struct {
+	*base
 	Root string
 }
 
@@ -118,8 +119,4 @@ func (r *Raku) Install(ctx context.Context, version string) (string, error) {
 
 func (r *Raku) BinDirs() []string {
 	return []string{"bin", filepath.Join("share", "perl6", "site", "bin")}
-}
-
-func (r *Raku) Untar(tarball string, targetDir string) error {
-	return Untar(tarball, targetDir)
 }

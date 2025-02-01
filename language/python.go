@@ -14,6 +14,7 @@ import (
 )
 
 type Python struct {
+	*base
 	Root string
 }
 
@@ -95,12 +96,4 @@ func (p *Python) Install(ctx context.Context, version string) (string, error) {
 		return "", err
 	}
 	return version, nil
-}
-
-func (p *Python) BinDirs() []string {
-	return []string{"bin"}
-}
-
-func (p *Python) Untar(tarball string, targetDir string) error {
-	return Untar(tarball, targetDir)
 }

@@ -11,6 +11,7 @@ import (
 )
 
 type Ruby struct {
+	*base
 	Root string
 }
 
@@ -95,12 +96,4 @@ func (r *Ruby) url(ctx context.Context, version string) (string, error) {
 		return "", fmt.Errorf("no archive for %s %s", runtime.GOOS, runtime.GOARCH)
 	}
 	return url, nil
-}
-
-func (r *Ruby) BinDirs() []string {
-	return []string{"bin"}
-}
-
-func (r *Ruby) Untar(tarball string, targetDir string) error {
-	return Untar(tarball, targetDir)
 }

@@ -12,6 +12,7 @@ import (
 )
 
 type Go struct {
+	*base
 	Root string
 }
 
@@ -82,12 +83,4 @@ func (g *Go) Install(ctx context.Context, version string) (string, error) {
 		return "", err
 	}
 	return version, nil
-}
-
-func (g *Go) BinDirs() []string {
-	return []string{"bin"}
-}
-
-func (g *Go) Untar(tarball string, targetDir string) error {
-	return Untar(tarball, targetDir)
 }

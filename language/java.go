@@ -18,6 +18,7 @@ import (
 )
 
 type Java struct {
+	*base
 	Root string
 }
 
@@ -136,10 +137,6 @@ func (j *Java) Install(ctx context.Context, version string) (string, error) {
 		return "", err
 	}
 	return version, nil
-}
-
-func (j *Java) BinDirs() []string {
-	return []string{"bin"}
 }
 
 func (j *Java) Untar(cacheFile string, targetDir string) error {

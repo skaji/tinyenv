@@ -10,6 +10,7 @@ import (
 )
 
 type Perl struct {
+	*base
 	Root string
 }
 
@@ -88,12 +89,4 @@ func (p *Perl) Install(ctx context.Context, version string) (string, error) {
 		return "", err
 	}
 	return version, nil
-}
-
-func (p *Perl) BinDirs() []string {
-	return []string{"bin"}
-}
-
-func (p *Perl) Untar(tarball string, targetDir string) error {
-	return Untar(tarball, targetDir)
 }
