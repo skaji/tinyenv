@@ -27,7 +27,7 @@ Languages:
   solr
 
 Commands:
-  global, install, reahsh, reset, version, versions
+  global, install, rehash, reset, version, versions
 
 Examples:
   ❯ tinyenv versions

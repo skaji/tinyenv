@@ -72,8 +72,9 @@ func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
 	}
 	var out2 []string
 	for _, version := range out {
-		if version != "" {
-			out2 = append(out2, "eclipse-temurin-"+version)
+		if strings.HasPrefix(version, "jdk-") {
+			version = strings.TrimPrefix(version, "jdk-")
+			out2 = append(out2, "temurin-"+version)
 		}
 	}
 	if all {
@@ -81,7 +82,7 @@ func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
 	}
 	majors := map[int]string{}
 	for _, version := range out2 {
-		m := regexp.MustCompile(`^eclipse-temurin-jdk-?(\d+)`).FindStringSubmatch(version)
+		m := regexp.MustCompile(`^temurin-(\d+)`).FindStringSubmatch(version)
 		if m != nil {
 			if major, err := strconv.Atoi(m[1]); err == nil {
 				if _, ok := majors[major]; !ok {
@@ -107,7 +108,7 @@ func (j *Java) Install(ctx context.Context, version string) (string, error) {
 		}
 		version = versions[0]
 	}
-	if !strings.HasPrefix(version, "eclipse-temurin-") {
+	if !strings.HasPrefix(version, "temurin-") {
 		return "", errors.New("invalid version: " + version)
 	}
 
@@ -116,7 +117,10 @@ func (j *Java) Install(ctx context.Context, version string) (string, error) {
 		return "", errors.New("already exists " + targetDir)
 	}
 
-	url := fmt.Sprintf(javaAssetURL, strings.TrimPrefix(version, "eclipse-temurin-"), javaOSArch.OS(), javaOSArch.Arch())
+	url := fmt.Sprintf(javaAssetURL,
+		"jdk-"+strings.TrimPrefix(version, "temurin-"),
+		javaOSArch.OS(),
+		javaOSArch.Arch())
 	cacheFile := filepath.Join(j.Root, "cache", version+".tar.gz")
 	if err := os.MkdirAll(filepath.Join(j.Root, "cache"), 0755); err != nil {
 		return "", err

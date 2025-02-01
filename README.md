@@ -33,7 +33,7 @@ Languages:
   go, java, node, perl, python, raku, ruby
 
 Commands:
-  global, install, reahsh, version, versions
+  global, install, rehash, version, versions
 
 Examples:
   ❯ tinyenv versions
@@ -47,24 +47,23 @@ Examples:
 
 ```console
 ❯ tinyenv java install -l
-jdk-22.0.2+9
-jdk-21.0.4+7
-jdk-20.0.2+9
-jdk-19.0.2+7
-jdk-18.0.2.1+1
-jdk-17.0.12+7
-jdk-11.0.22+7.1
+temurin-23.0.2+7
+temurin-22.0.2+9
+temurin-21.0.6+7
+temurin-20.0.2+9
+temurin-19.0.2+7
+temurin-18.0.2.1+1
+temurin-17.0.14+7
+temurin-11.0.26+4
 
-❯ tinyenv java install jdk-21.0.4+7
----> Downloading https://api.adoptium.net/v3/binary/version/jdk-21.0.4+7/mac/aarch64/jdk/hotspot/normal/eclipse
----> Extracting /Users/skaji/src/github.com/skaji/tinyenv/_root/java/cache/jdk-21.0.4+7.tar.gz
-
-❯ tinyenv java global jdk-21.0.4+7
+❯ tinyenv java install -g latest
+---> Downloading https://api.adoptium.net/v3/binary/version/jdk-23.0.2+7/mac/aarch64/jdk/hotspot/normal/eclipse
+---> Extracting /Users/skaji/src/github.com/skaji/tinyenv/_root/java/cache/temurin-23.0.2+7.tar.gz
 
 ❯ java --version
-openjdk 21.0.4 2024-07-16 LTS
-OpenJDK Runtime Environment Temurin-21.0.4+7 (build 21.0.4+7-LTS)
-OpenJDK 64-Bit Server VM Temurin-21.0.4+7 (build 21.0.4+7-LTS, mixed mode)
+openjdk 23.0.2 2025-01-21
+OpenJDK Runtime Environment Temurin-23.0.2+7 (build 23.0.2+7)
+OpenJDK 64-Bit Server VM Temurin-23.0.2+7 (build 23.0.2+7, mixed mode, sharing)
 ```
 
 # Author
