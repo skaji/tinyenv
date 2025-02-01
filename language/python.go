@@ -25,10 +25,10 @@ var pythonOSArch = &OSArch{
 	ARM64:  "aarch64",
 }
 
-const pythonURL = "https://github.com/indygreg/python-build-standalone"
+const pythonURL = "https://github.com/astral-sh/python-build-standalone"
 
 // tag, pythonVersion, tag, os, arch
-const pythonAssetURL = "https://github.com/indygreg/python-build-standalone/releases/download/%s/cpython-%s+%s-%s-%s-install_only.tar.gz"
+const pythonAssetURL = "https://github.com/astral-sh/python-build-standalone/releases/download/%s/cpython-%s+%s-%s-%s-install_only.tar.gz"
 
 func (p *Python) List(ctx context.Context, all bool) ([]string, error) {
 	g := &GitHub{}
