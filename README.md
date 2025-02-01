@@ -58,7 +58,7 @@ temurin-11.0.26+4
 
 ❯ tinyenv java install -g latest
 ---> Downloading https://api.adoptium.net/v3/binary/version/jdk-23.0.2+7/mac/aarch64/jdk/hotspot/normal/eclipse
----> Extracting /Users/skaji/src/github.com/skaji/tinyenv/_root/java/cache/temurin-23.0.2+7.tar.gz
+---> Extracting /Users/skaji/.tinyenv/java/cache/temurin-23.0.2+7.tar.gz
 
 ❯ java --version
 openjdk 23.0.2 2025-01-21
