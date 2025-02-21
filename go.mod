@@ -1,8 +1,8 @@
 module github.com/skaji/tinyenv
 
-go 1.23.5
+go 1.24.0
 
 require (
-	golang.org/x/mod v0.22.0
-	golang.org/x/sync v0.10.0
+	golang.org/x/mod v0.23.0
+	golang.org/x/sync v0.11.0
 )
