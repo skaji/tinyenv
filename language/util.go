@@ -48,7 +48,7 @@ func Untar(tarball string, targetDir string) error {
 }
 
 func UntarStrip(tarball string, targetDir string, strip int) error {
-	if _, err := os.Stat(targetDir); err == nil {
+	if ExistsFS(targetDir) {
 		return errors.New("already exists " + targetDir)
 	}
 	tarExec, err := exec.LookPath("gtar")
