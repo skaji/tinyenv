@@ -65,10 +65,14 @@ func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
 		return "", err
 	}
 	fmt.Println("---> Extracting " + cacheFile)
-	if err := UntarStrip(cacheFile, targetDir, 2); err != nil {
+	if err := r.Untar(cacheFile, targetDir); err != nil {
 		return "", err
 	}
 	return version, nil
+}
+
+func (r *Ruby) Untar(cacheFile string, targetDir string) error {
+	return UntarStrip(cacheFile, targetDir, 2)
 }
 
 func (r *Ruby) url(ctx context.Context, version string) (string, error) {

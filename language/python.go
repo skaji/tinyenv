@@ -92,7 +92,7 @@ func (p *Python) Install(ctx context.Context, version string) (string, error) {
 		return "", err
 	}
 	fmt.Println("---> Extracting " + cacheFile)
-	if err := Untar(cacheFile, targetDir); err != nil {
+	if err := p.Untar(cacheFile, targetDir); err != nil {
 		return "", err
 	}
 	return version, nil
