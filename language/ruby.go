@@ -30,10 +30,6 @@ func (r *Ruby) List(ctx context.Context, all bool) ([]string, error) {
 }
 
 func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
-	if runtime.GOOS == "linux" && runtime.GOARCH == "arm64" {
-		return "", errors.New("unsupported os/arch")
-	}
-
 	if version == "latest" {
 		versions, err := r.List(ctx, true)
 		if err != nil {
@@ -89,6 +85,8 @@ func (r *Ruby) url(ctx context.Context, version string) (string, error) {
 		switch {
 		case strings.Contains(asset, "x86_64_linux"):
 			assetMap["linux_amd64"] = asset
+		case strings.Contains(asset, "arm64_linux"):
+			assetMap["linux_arm64"] = asset
 		case strings.Contains(asset, "arm64"):
 			assetMap["darwin_arm64"] = asset
 		default:
