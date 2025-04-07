@@ -8,7 +8,7 @@ import (
 func TestGitHub(t *testing.T) {
 	g := &GitHub{}
 
-	tags, err := g.Tags(context.Background(), "https://github.com/indygreg/python-build-standalone")
+	tags, err := g.Tags(context.Background(), "https://github.com/astral-sh/python-build-standalone")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -16,7 +16,7 @@ func TestGitHub(t *testing.T) {
 		t.Log(tag)
 	}
 
-	assets, err := g.Assets(context.Background(), "https://github.com/indygreg/python-build-standalone", tags[0])
+	assets, err := g.Assets(context.Background(), "https://github.com/astral-sh/python-build-standalone", tags[0])
 	if err != nil {
 		t.Fatal(err)
 	}
