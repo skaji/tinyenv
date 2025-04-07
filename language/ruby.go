@@ -26,6 +26,9 @@ func (r *Ruby) List(ctx context.Context, all bool) ([]string, error) {
 	for i, tag := range tags {
 		versions[i] = "homebrew-portable-" + tag
 	}
+	if !all && len(versions) > 5 {
+		return versions[:5], nil
+	}
 	return versions, nil
 }
 
@@ -52,7 +55,7 @@ func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
 	}
 
 	cacheFile := filepath.Join(r.Root, "cache", version+".tar.gz")
-	if err := os.MkdirAll(filepath.Join(r.Root, "cache"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(r.Root, "cache"), 0o755); err != nil {
 		return "", err
 	}
 

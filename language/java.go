@@ -123,7 +123,7 @@ func (j *Java) Install(ctx context.Context, version string) (string, error) {
 		javaOSArch.OS(),
 		javaOSArch.Arch())
 	cacheFile := filepath.Join(j.Root, "cache", version+".tar.gz")
-	if err := os.MkdirAll(filepath.Join(j.Root, "cache"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(j.Root, "cache"), 0o755); err != nil {
 		return "", err
 	}
 

@@ -76,7 +76,7 @@ func (l *Language) Version() (string, error) {
 }
 
 func (l *Language) SetVersion(version string) error {
-	return os.WriteFile(filepath.Join(l.Root, "version"), append([]byte(version), '\n'), 0644)
+	return os.WriteFile(filepath.Join(l.Root, "version"), append([]byte(version), '\n'), 0o644)
 }
 
 func (l *Language) Versions() ([]string, error) {
@@ -108,7 +108,7 @@ func (l *Language) Init() error {
 	if ExistsFS(versionsDir) {
 		return nil
 	}
-	return os.MkdirAll(versionsDir, 0755)
+	return os.MkdirAll(versionsDir, 0o755)
 }
 
 func (l *Language) Rehash() error {
@@ -164,7 +164,7 @@ func (l *Language) Rehash() error {
 			if err != nil {
 				return err
 			}
-			if info.Mode()&0111 != 0 {
+			if info.Mode()&0o111 != 0 {
 				exeFiles = append(exeFiles, e.Name())
 			}
 		}
@@ -172,7 +172,7 @@ func (l *Language) Rehash() error {
 			source := filepath.Join(l.Root, "versions", version, binDir, exeFile)
 			target := filepath.Join(filepath.Dir(l.Root), "bin", exeFile)
 			content := header + fmt.Sprintf(`exec "%s" "$@"`, source) + "\n"
-			if err := os.WriteFile(target, []byte(content), 0755); err != nil {
+			if err := os.WriteFile(target, []byte(content), 0o755); err != nil {
 				return err
 			}
 		}

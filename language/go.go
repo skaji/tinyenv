@@ -70,7 +70,7 @@ func (g *Go) Install(ctx context.Context, version string) (string, error) {
 
 	url := fmt.Sprintf(goAssetURL, version, goOSArch.OS(), goOSArch.Arch())
 	cacheFile := filepath.Join(g.Root, "cache", version+".tar.gz")
-	if err := os.MkdirAll(filepath.Join(g.Root, "cache"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(g.Root, "cache"), 0o755); err != nil {
 		return "", err
 	}
 

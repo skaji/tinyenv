@@ -56,7 +56,7 @@ func (s *Solr) Install(ctx context.Context, version string) (string, error) {
 
 	url := fmt.Sprintf(solrAssetURL, version, version)
 	cacheFile := filepath.Join(s.Root, "cache", version+".tar.gz")
-	if err := os.MkdirAll(filepath.Join(s.Root, "cache"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(s.Root, "cache"), 0o755); err != nil {
 		return "", err
 	}
 

@@ -58,7 +58,7 @@ func UntarStrip(tarball string, targetDir string, strip int) error {
 			return errors.New("missing 'tar' command")
 		}
 	}
-	if err := os.MkdirAll(targetDir, 0755); err != nil {
+	if err := os.MkdirAll(targetDir, 0o755); err != nil {
 		return err
 	}
 	cmd := exec.Command(

@@ -1,0 +1,19 @@
+version: "2"
+linters:
+  enable:
+    - revive
+    - whitespace
+  exclusions:
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - staticcheck
+        text: "QF1001:"
+formatters:
+  enable:
+    - gofumpt
+    - goimports

@@ -76,7 +76,7 @@ func (p *Perl) Install(ctx context.Context, version string) (string, error) {
 
 	url := fmt.Sprintf(perlAssetURL, strings.TrimPrefix(version, "relocatable-"), perlOSArch.OS(), perlOSArch.Arch())
 	cacheFile := filepath.Join(p.Root, "cache", version+".tar.xz")
-	if err := os.MkdirAll(filepath.Join(p.Root, "cache"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(p.Root, "cache"), 0o755); err != nil {
 		return "", err
 	}
 

@@ -101,7 +101,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	if err := os.MkdirAll(filepath.Join(root, "bin"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(root, "bin"), 0o755); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -216,7 +216,7 @@ func main() {
 			fmt.Println(v)
 		case "global":
 			if len(args) == 0 {
-				return errors.New("need version argument.")
+				return errors.New("need version argument")
 			}
 			version := args[0]
 			versions, err := lang.Versions()
@@ -234,7 +234,7 @@ func main() {
 			return lang.Rehash()
 		case "install":
 			if len(args) == 0 {
-				return errors.New("need version argument.")
+				return errors.New("need version argument")
 			}
 			if args[0] == "-l" || args[0] == "-L" {
 				versions, err := lang.List(context.Background(), args[0] == "-L")
@@ -252,7 +252,7 @@ func main() {
 				args = args[1:]
 			}
 			if len(args) == 0 {
-				return errors.New("need version argument.")
+				return errors.New("need version argument")
 			}
 			version := args[0]
 			version2, err := lang.Install(context.Background(), version)
@@ -265,7 +265,7 @@ func main() {
 			return lang.Rehash()
 		case "reset":
 			if len(args) == 0 {
-				return errors.New("need version argument.")
+				return errors.New("need version argument")
 			}
 			version := args[0]
 			return lang.Reset(version)
