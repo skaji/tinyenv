@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/fs"
+	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -112,7 +112,10 @@ func (l *Language) Init() error {
 }
 
 func (l *Language) Rehash() error {
-	// remove old symlink first
+	// remove old exeFiles first
+	header := fmt.Sprintf("#!/bin/sh\n# %s\n", l.Name)
+	headerBytes := []byte(header)
+	headerLen := len(headerBytes)
 	{
 		rootBinDir := filepath.Join(filepath.Dir(l.Root), "bin")
 		entries, err := os.ReadDir(rootBinDir)
@@ -123,17 +126,20 @@ func (l *Language) Rehash() error {
 			if e.IsDir() {
 				continue
 			}
-			if e.Type() != fs.ModeSymlink {
-				continue
-			}
 			path := filepath.Join(rootBinDir, e.Name())
-			linkPath, err := os.Readlink(path)
+			f, err := os.Open(path)
 			if err != nil {
-				return fmt.Errorf("os.Readlink(%s): %w", path, err)
+				return err
 			}
-			if strings.HasPrefix(linkPath, filepath.Join("..", l.Name)) {
+			b := make([]byte, headerLen)
+			_, err = f.Read(b)
+			f.Close()
+			if err != nil && !errors.Is(err, io.EOF) {
+				return err
+			}
+			if slices.Equal(b[:headerLen], headerBytes) {
 				if err := os.Remove(path); err != nil {
-					return fmt.Errorf("os.Remove(%s): %w", path, err)
+					return err
 				}
 			}
 		}
@@ -163,10 +169,11 @@ func (l *Language) Rehash() error {
 			}
 		}
 		for _, exeFile := range exeFiles {
-			source := filepath.Join("..", l.Name, "versions", version, binDir, exeFile)
+			source := filepath.Join(l.Root, "versions", version, binDir, exeFile)
 			target := filepath.Join(filepath.Dir(l.Root), "bin", exeFile)
-			if err := os.Symlink(source, target); err != nil {
-				return fmt.Errorf("os.Symlink(%s, %s): %w", source, target, err)
+			content := header + fmt.Sprintf(`exec "%s" "$@"`, source) + "\n"
+			if err := os.WriteFile(target, []byte(content), 0o755); err != nil {
+				return err
 			}
 		}
 	}
