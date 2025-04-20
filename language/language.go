@@ -111,6 +111,8 @@ func (l *Language) Init() error {
 	return os.MkdirAll(versionsDir, 0o755)
 }
 
+// Symlinks may not work with `exec "$(dirname "$0")"/perl -x "$0" "$@"` notation
+// So we use shell scripts instead
 func (l *Language) Rehash() error {
 	// remove old exeFiles first
 	header := fmt.Sprintf("#!/bin/sh\n# %s\n", l.Name)
