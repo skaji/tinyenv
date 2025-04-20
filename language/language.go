@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/skaji/tinyenv/config"
 	"golang.org/x/mod/semver"
 )
 
@@ -25,8 +26,9 @@ var All = []string{
 }
 
 type Language struct {
-	Name string
-	Root string
+	Name   string
+	Root   string
+	Config *config.Config
 }
 
 type Specific interface {
@@ -152,6 +154,10 @@ func (l *Language) Rehash() error {
 		return err
 	}
 
+	var cfg *config.Rehash
+	if l.Config != nil {
+		cfg = l.Config.Rehash[l.Name]
+	}
 	for _, binDir := range l.Specific().BinDirs() {
 		entries, err := os.ReadDir(filepath.Join(l.Root, "versions", version, binDir))
 		if err != nil {
@@ -160,6 +166,9 @@ func (l *Language) Rehash() error {
 		var exeFiles []string
 		for _, e := range entries {
 			if e.IsDir() {
+				continue
+			}
+			if !cfg.Target(e.Name()) {
 				continue
 			}
 			info, err := e.Info()

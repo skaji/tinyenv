@@ -10,6 +10,7 @@ import (
 	"slices"
 	"sync"
 
+	"github.com/skaji/tinyenv/config"
 	"github.com/skaji/tinyenv/language"
 )
 
@@ -75,6 +76,7 @@ func main() {
 			for _, l := range language.All {
 				fmt.Println(l)
 			}
+			fmt.Println("root")
 			fmt.Println("latest")
 			fmt.Println("version")
 			fmt.Println("versions")
@@ -105,13 +107,24 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+
+	var cfg *config.Config
+	if path := filepath.Join(root, "config.json"); language.ExistsFS(path) {
+		c, err := config.NewFromFile(path)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		cfg = c
+	}
+
 	switch os.Args[1] {
 	case "root":
 		fmt.Println(root)
 		os.Exit(0)
 	case "version":
 		for _, l := range language.All {
-			lang := &language.Language{Name: l, Root: filepath.Join(root, l)}
+			lang := &language.Language{Name: l, Root: filepath.Join(root, l), Config: cfg}
 			if version, err := lang.Version(); err == nil {
 				fmt.Printf("%s %s\n", l, version)
 			}
@@ -119,7 +132,7 @@ func main() {
 		os.Exit(0)
 	case "versions":
 		for _, l := range language.All {
-			lang := &language.Language{Name: l, Root: filepath.Join(root, l)}
+			lang := &language.Language{Name: l, Root: filepath.Join(root, l), Config: cfg}
 			versions, err := lang.Versions()
 			if err != nil {
 				continue
@@ -146,7 +159,7 @@ func main() {
 		for i, l := range language.All {
 			go func() {
 				defer wg.Done()
-				lang := &language.Language{Name: l, Root: filepath.Join(root, l)}
+				lang := &language.Language{Name: l, Root: filepath.Join(root, l), Config: cfg}
 				versions, err := lang.List(context.Background(), false)
 				if err != nil {
 					results[i] = &result{
@@ -178,7 +191,7 @@ func main() {
 
 	var lang *language.Language
 	if l := os.Args[1]; slices.Contains(language.All, l) {
-		lang = &language.Language{Name: l, Root: filepath.Join(root, l)}
+		lang = &language.Language{Name: l, Root: filepath.Join(root, l), Config: cfg}
 	} else {
 		fmt.Fprintln(os.Stderr, "unknown language: "+l)
 		os.Exit(1)
