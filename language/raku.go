@@ -76,6 +76,14 @@ func (r *Raku) List(ctx context.Context, all bool) ([]string, error) {
 	return out, nil
 }
 
+func (r *Raku) Latest(ctx context.Context) (string, error) {
+	out, err := r.list(ctx)
+	if err != nil {
+		return "", err
+	}
+	return out[0].Version, nil
+}
+
 func (r *Raku) Install(ctx context.Context, version string) (string, error) {
 	assets, err := r.list(ctx)
 	if err != nil {

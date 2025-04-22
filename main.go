@@ -160,7 +160,7 @@ func main() {
 			go func() {
 				defer wg.Done()
 				lang := &language.Language{Name: l, Root: filepath.Join(root, l), Config: cfg}
-				versions, err := lang.List(context.Background(), false)
+				latest, err := lang.Latest(context.Background())
 				if err != nil {
 					results[i] = &result{
 						Language: l,
@@ -169,7 +169,6 @@ func main() {
 					}
 					return
 				}
-				latest := versions[0]
 				locals, _ := lang.Versions()
 				have := slices.Contains(locals, latest)
 				results[i] = &result{

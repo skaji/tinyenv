@@ -55,13 +55,21 @@ func (g *Go) List(ctx context.Context, all bool) ([]string, error) {
 	return out, nil
 }
 
+func (g *Go) Latest(ctx context.Context) (string, error) {
+	out, err := g.List(ctx, false)
+	if err != nil {
+		return "", err
+	}
+	return out[0], nil
+}
+
 func (g *Go) Install(ctx context.Context, version string) (string, error) {
 	if version == "latest" {
-		versions, err := g.List(ctx, false)
+		latest, err := g.Latest(ctx)
 		if err != nil {
 			return "", err
 		}
-		version = versions[0]
+		version = latest
 	}
 	targetDir := filepath.Join(g.Root, "versions", version)
 	if ExistsFS(targetDir) {

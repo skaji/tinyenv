@@ -34,7 +34,7 @@ const javaVersionsURL = "https://api.adoptium.net/v3/info/release_names"
 // version, os, arch
 const javaAssetURL = "https://api.adoptium.net/v3/binary/version/%s/%s/%s/jdk/hotspot/normal/eclipse"
 
-func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
+func (j *Java) list(ctx context.Context, onlyLTS bool) ([]string, error) {
 	loops := 5
 	out := make([]string, 20*loops)
 	var group errgroup.Group
@@ -47,6 +47,9 @@ func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
 		q.Set("project", "jdk")
 		q.Set("page_size", "20")
 		q.Set("page", strconv.Itoa(i))
+		if onlyLTS {
+			q.Set("lts", "true")
+		}
 		u := javaVersionsURL + "?" + q.Encode()
 		group.Go(func() error {
 			body, err := HTTPGet(ctx, u)
@@ -78,11 +81,19 @@ func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
 			out2 = append(out2, "temurin-"+version)
 		}
 	}
+	return out2, nil
+}
+
+func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
+	out, err := j.list(ctx, false)
+	if err != nil {
+		return nil, err
+	}
 	if all {
-		return out2, nil
+		return out, nil
 	}
 	majors := map[int]string{}
-	for _, version := range out2 {
+	for _, version := range out {
 		m := regexp.MustCompile(`^temurin-(\d+)`).FindStringSubmatch(version)
 		if m != nil {
 			if major, err := strconv.Atoi(m[1]); err == nil {
@@ -92,22 +103,30 @@ func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
 			}
 		}
 	}
-	var out3 []string
+	var out2 []string
 	keys := slices.Sorted(maps.Keys(majors))
 	slices.Reverse(keys)
 	for _, major := range keys {
-		out3 = append(out3, majors[major])
+		out2 = append(out2, majors[major])
 	}
-	return out3, nil
+	return out2, nil
+}
+
+func (j *Java) Latest(ctx context.Context) (string, error) {
+	out, err := j.list(ctx, true)
+	if err != nil {
+		return "", err
+	}
+	return out[0], nil
 }
 
 func (j *Java) Install(ctx context.Context, version string) (string, error) {
 	if version == "latest" {
-		versions, err := j.List(ctx, false)
+		latest, err := j.Latest(ctx)
 		if err != nil {
 			return "", err
 		}
-		version = versions[0]
+		version = latest
 	}
 	if !strings.HasPrefix(version, "temurin-") {
 		return "", errors.New("invalid version: " + version)

@@ -41,13 +41,21 @@ func (s *Solr) List(ctx context.Context, all bool) ([]string, error) {
 	return out, nil
 }
 
+func (s *Solr) Latest(ctx context.Context) (string, error) {
+	out, err := s.List(ctx, true)
+	if err != nil {
+		return "", err
+	}
+	return out[0], nil
+}
+
 func (s *Solr) Install(ctx context.Context, version string) (string, error) {
 	if version == "latest" {
-		versions, err := s.List(ctx, false)
+		latest, err := s.Latest(ctx)
 		if err != nil {
 			return "", err
 		}
-		version = versions[0]
+		version = latest
 	}
 	targetDir := filepath.Join(s.Root, "versions", version)
 	if ExistsFS(targetDir) {

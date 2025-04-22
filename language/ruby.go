@@ -32,13 +32,21 @@ func (r *Ruby) List(ctx context.Context, all bool) ([]string, error) {
 	return versions, nil
 }
 
+func (r *Ruby) Latest(ctx context.Context) (string, error) {
+	out, err := r.List(ctx, true)
+	if err != nil {
+		return "", err
+	}
+	return out[0], nil
+}
+
 func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
 	if version == "latest" {
-		versions, err := r.List(ctx, true)
+		latest, err := r.Latest(ctx)
 		if err != nil {
 			return "", err
 		}
-		version = versions[0]
+		version = latest
 	}
 	if !strings.HasPrefix(version, "homebrew-portable-") {
 		return "", errors.New("invalid version: " + version)

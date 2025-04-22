@@ -58,13 +58,21 @@ func (p *Perl) List(ctx context.Context, all bool) ([]string, error) {
 	return out, nil
 }
 
+func (p *Perl) Latest(ctx context.Context) (string, error) {
+	out, err := p.List(ctx, true)
+	if err != nil {
+		return "", err
+	}
+	return out[0], nil
+}
+
 func (p *Perl) Install(ctx context.Context, version string) (string, error) {
 	if version == "latest" {
-		versions, err := p.List(ctx, false)
+		latest, err := p.Latest(ctx)
 		if err != nil {
 			return "", err
 		}
-		version = versions[0]
+		version = latest
 	}
 	if !strings.HasPrefix(version, "relocatable-") {
 		return "", errors.New("invalid version")
