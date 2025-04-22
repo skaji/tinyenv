@@ -40,6 +40,7 @@ Languages:
 Commands:
   global
   install
+  latest
   rehash
   reset
   version
@@ -100,6 +101,7 @@ func main() {
 		case "--completion2":
 			fmt.Println("global")
 			fmt.Println("install")
+			fmt.Println("latest")
 			fmt.Println("rehash")
 			fmt.Println("reset")
 			fmt.Println("version")
@@ -269,6 +271,12 @@ func main() {
 				return err
 			}
 			return lang.Rehash()
+		case "latest":
+			latest, err := lang.Latest(context.Background())
+			if err != nil {
+				return err
+			}
+			fmt.Println(latest)
 		case "rehash":
 			return lang.Rehash()
 		case "install":
