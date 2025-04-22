@@ -21,14 +21,29 @@ var helpMessage = `Usage:
   ❯ tinyenv LANGUAGE COMMAND...
 
 Global Commands:
-  latest, version, versions
+  latest
+  rehash
+  root
+  version
+  versions
 
 Languages:
-  go, java, node, perl, python, raku, ruby
+  go
+  java
+  node
+  perl
+  python
+  raku
+  ruby
   solr
 
 Commands:
-  global, install, rehash, reset, version, versions
+  global
+  install
+  rehash
+  reset
+  version
+  versions
 
 Examples:
   ❯ tinyenv versions
@@ -76,8 +91,9 @@ func main() {
 			for _, l := range language.All {
 				fmt.Println(l)
 			}
-			fmt.Println("root")
 			fmt.Println("latest")
+			fmt.Println("rehash")
+			fmt.Println("root")
 			fmt.Println("version")
 			fmt.Println("versions")
 			os.Exit(0)
@@ -93,7 +109,7 @@ func main() {
 	}
 	if len(os.Args) < 3 &&
 		!(len(os.Args) == 2 &&
-			(os.Args[1] == "root" || os.Args[1] == "versions" || os.Args[1] == "version" || os.Args[1] == "latest")) {
+			(os.Args[1] == "root" || os.Args[1] == "versions" || os.Args[1] == "version" || os.Args[1] == "latest" || os.Args[1] == "rehash")) {
 		fmt.Fprintln(os.Stderr, "invalid arguments")
 		os.Exit(1)
 	}
@@ -144,6 +160,17 @@ func main() {
 					mark = "* "
 				}
 				fmt.Printf("%s%s %s\n", mark, l, v)
+			}
+		}
+		os.Exit(0)
+	case "rehash":
+		for _, l := range language.All {
+			lang := &language.Language{Name: l, Root: filepath.Join(root, l), Config: cfg}
+			if _, err := lang.Version(); err == nil {
+				if err := lang.Rehash(); err != nil {
+					fmt.Fprintf(os.Stderr, "%s rehash error: %v", l, err)
+					os.Exit(1)
+				}
 			}
 		}
 		os.Exit(0)
