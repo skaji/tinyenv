@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"slices"
 	"sync"
@@ -317,20 +316,7 @@ func main() {
 			version := args[0]
 			return lang.Reset(version)
 		default:
-			plugin := "tinyenv-" + command
-			path, err := exec.LookPath(plugin)
-			if err != nil {
-				return errors.New("invalid command: " + command)
-			}
-			args2 := append([]string{os.Args[1], command}, args...)
-			cmd := exec.Command(path, args2...)
-			cmd.Env = append(slices.Clone(os.Environ()), "TINYENV_ROOT="+root)
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			if err := cmd.Run(); err != nil {
-				return err
-			}
+			return errors.New("unknown command: " + command)
 		}
 		return nil
 	}(os.Args[2], os.Args[3:]...)
