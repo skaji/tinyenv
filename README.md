@@ -27,13 +27,30 @@ Usage:
   ❯ tinyenv LANGUAGE COMMAND...
 
 Global Commands:
-  version, versions
+  latest
+  rehash
+  root
+  version
+  versions
 
 Languages:
-  go, java, node, perl, python, raku, ruby
+  go
+  java
+  node
+  perl
+  python
+  raku
+  ruby
+  solr
 
 Commands:
-  global, install, rehash, version, versions
+  global
+  install
+  latest
+  rehash
+  reset
+  version
+  versions
 
 Examples:
   ❯ tinyenv versions
