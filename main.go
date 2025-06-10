@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"sync"
 
 	"github.com/skaji/tinyenv/config"
@@ -20,30 +21,13 @@ var helpMessage = `Usage:
   ❯ tinyenv LANGUAGE COMMAND...
 
 Global Commands:
-  latest
-  rehash
-  root
-  version
-  versions
+  %s
 
 Languages:
-  go
-  java
-  node
-  perl
-  python
-  raku
-  ruby
-  solr
+  %s
 
 Commands:
-  global
-  install
-  latest
-  rehash
-  reset
-  version
-  versions
+  %s
 
 Examples:
   ❯ tinyenv versions
@@ -76,10 +60,31 @@ _tinyenv() {
 `
 
 func main() {
+	globalCommands := []string{
+		"files",
+		"latest",
+		"rehash",
+		"root",
+		"version",
+		"versions",
+	}
+	languageCommands := []string{
+		"global",
+		"install",
+		"latest",
+		"rehash",
+		"reset",
+		"version",
+		"versions",
+	}
+
 	if len(os.Args) == 2 {
 		switch os.Args[1] {
 		case "-h", "--help":
-			fmt.Print(helpMessage)
+			globalCommandStr := strings.Join(globalCommands, "\n  ")
+			languageStr := strings.Join(language.All, "\n  ")
+			languageCommandStr := strings.Join(languageCommands, "\n  ")
+			fmt.Printf(helpMessage, globalCommandStr, languageStr, languageCommandStr)
 			os.Exit(1)
 		case "--version":
 			fmt.Println(version)
@@ -91,26 +96,19 @@ func main() {
 			for _, l := range language.All {
 				fmt.Println(l)
 			}
-			fmt.Println("latest")
-			fmt.Println("rehash")
-			fmt.Println("root")
-			fmt.Println("version")
-			fmt.Println("versions")
+			for _, c := range globalCommands {
+				fmt.Println(c)
+			}
 			os.Exit(0)
 		case "--completion2":
-			fmt.Println("global")
-			fmt.Println("install")
-			fmt.Println("latest")
-			fmt.Println("rehash")
-			fmt.Println("reset")
-			fmt.Println("version")
-			fmt.Println("versions")
+			for _, c := range languageCommands {
+				fmt.Println(c)
+			}
 			os.Exit(0)
 		}
 	}
 	if len(os.Args) < 3 &&
-		!(len(os.Args) == 2 &&
-			(os.Args[1] == "root" || os.Args[1] == "versions" || os.Args[1] == "version" || os.Args[1] == "latest" || os.Args[1] == "rehash")) {
+		!(len(os.Args) == 2 && slices.Contains(globalCommands, os.Args[1])) {
 		fmt.Fprintln(os.Stderr, "invalid arguments")
 		os.Exit(1)
 	}
@@ -167,11 +165,9 @@ func main() {
 	case "rehash":
 		for _, l := range language.All {
 			lang := &language.Language{Name: l, Root: filepath.Join(root, l), Config: cfg}
-			if _, err := lang.Version(); err == nil {
-				if err := lang.Rehash(); err != nil {
-					fmt.Fprintf(os.Stderr, "%s rehash error: %v", l, err)
-					os.Exit(1)
-				}
+			if err := lang.Rehash(); err != nil {
+				fmt.Fprintf(os.Stderr, "%s rehash error: %v", l, err)
+				os.Exit(1)
 			}
 		}
 		os.Exit(0)
@@ -212,6 +208,39 @@ func main() {
 		fmt.Printf(format, "-----", "--------", "------")
 		for _, res := range results {
 			fmt.Printf(format, res.Have, res.Language, res.Latest)
+		}
+		os.Exit(0)
+	case "files":
+		if entries, err := os.ReadDir(filepath.Join(root, "bin")); err == nil {
+			for _, e := range entries {
+				fmt.Println(filepath.Join(root, "bin", e.Name()))
+			}
+		}
+		entries, err := os.ReadDir(root)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		for _, entry := range entries {
+			if entry.Name() == "bin" {
+				continue
+			}
+			if !entry.IsDir() {
+				continue
+			}
+			if v := filepath.Join(root, entry.Name(), "version"); language.ExistsFS(v) {
+				fmt.Println(v)
+			}
+			if es, err := os.ReadDir(filepath.Join(root, entry.Name(), "cache")); err == nil {
+				for _, e := range es {
+					fmt.Println(filepath.Join(root, entry.Name(), "cache", e.Name()))
+				}
+			}
+			if es, err := os.ReadDir(filepath.Join(root, entry.Name(), "versions")); err == nil {
+				for _, e := range es {
+					fmt.Println(filepath.Join(root, entry.Name(), "versions", e.Name()))
+				}
+			}
 		}
 		os.Exit(0)
 	}

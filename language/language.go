@@ -156,7 +156,7 @@ func (l *Language) Rehash() error {
 
 	version, err := l.Version()
 	if err != nil {
-		return err
+		return nil
 	}
 
 	var cfg *config.Rehash
