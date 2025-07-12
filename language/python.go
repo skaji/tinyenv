@@ -36,30 +36,36 @@ func (p *Python) List(ctx context.Context, all bool) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	latestTag := tags[0]
-	assets, err := g.Assets(ctx, pythonURL, latestTag)
-	if err != nil {
-		return nil, err
-	}
-	var out []string
-	seen := map[string]bool{}
-	for _, asset := range assets {
-		m := regexp.MustCompile(`cpython-(.+?)\+.*-install_only.tar.gz$`).FindStringSubmatch(asset)
-		if m != nil {
-			version := m[1] + "+" + latestTag
-			if !seen[version] {
-				out = append(out, version)
-				seen[version] = true
+	for i := range 2 {
+		latestTag := tags[i]
+		assets, err := g.Assets(ctx, pythonURL, latestTag)
+		if err != nil {
+			return nil, err
+		}
+		var out []string
+		seen := map[string]bool{}
+		for _, asset := range assets {
+			m := regexp.MustCompile(`cpython-(.+?)\+.*-install_only.tar.gz$`).FindStringSubmatch(asset)
+			if m != nil {
+				version := m[1] + "+" + latestTag
+				if !seen[version] {
+					out = append(out, version)
+					seen[version] = true
+				}
 			}
 		}
+		if len(out) == 0 {
+			continue
+		}
+		slices.SortFunc(out, func(v1, v2 string) int {
+			return semver.Compare("v"+v2, "v"+v1)
+		})
+		if !all && len(out) > 10 {
+			out = out[:10]
+		}
+		return out, nil
 	}
-	slices.SortFunc(out, func(v1, v2 string) int {
-		return semver.Compare("v"+v2, "v"+v1)
-	})
-	if !all && len(out) > 10 {
-		out = out[:10]
-	}
-	return out, nil
+	return nil, errors.New("Python.List failed")
 }
 
 func (p *Python) Latest(ctx context.Context) (string, error) {
