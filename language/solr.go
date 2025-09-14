@@ -20,6 +20,9 @@ const solrVersionsURL = "https://archive.apache.org/dist/solr/solr/"
 // version, version
 const solrAssetURL = "https://archive.apache.org/dist/solr/solr/%s/solr-%s.tgz"
 
+// version, version
+const solrFastAssetURL = "https://downloads.apache.org/solr/solr/%s/solr-%s.tgz"
+
 func (s *Solr) List(ctx context.Context, all bool) ([]string, error) {
 	b, err := HTTPGet(ctx, solrVersionsURL)
 	if err != nil {
@@ -62,7 +65,10 @@ func (s *Solr) Install(ctx context.Context, version string) (string, error) {
 		return "", errors.New("already exists " + targetDir)
 	}
 
-	url := fmt.Sprintf(solrAssetURL, version, version)
+	url := fmt.Sprintf(solrFastAssetURL, version, version)
+	if err := HTTPHead(ctx, url); err != nil {
+		url = fmt.Sprintf(solrAssetURL, version, version)
+	}
 	cacheFile := filepath.Join(s.Root, "cache", version+".tar.gz")
 	if err := os.MkdirAll(filepath.Join(s.Root, "cache"), 0o755); err != nil {
 		return "", err

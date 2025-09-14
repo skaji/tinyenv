@@ -9,6 +9,8 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 type OSArch struct {
@@ -92,6 +94,20 @@ func HTTPGet(ctx context.Context, url string) ([]byte, error) {
 	return b, nil
 }
 
+func HTTPHead(ctx context.Context, url string) error {
+	req, _ := http.NewRequestWithContext(ctx, http.MethodHead, url, nil)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	io.Copy(io.Discard, res.Body)
+	res.Body.Close()
+	if res.StatusCode/100 != 2 {
+		return errors.New(res.Status + " " + url)
+	}
+	return nil
+}
+
 func HTTPMirror(ctx context.Context, url string, targetFile string) error {
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if info, err := os.Stat(targetFile); err == nil {
@@ -116,7 +132,10 @@ func HTTPMirror(ctx context.Context, url string, targetFile string) error {
 	if err != nil {
 		return err
 	}
-	_, copyErr := io.Copy(f, res.Body)
+
+	bar := progressbar.DefaultBytes(res.ContentLength, "")
+	_, copyErr := io.Copy(io.MultiWriter(f, bar), res.Body)
+	bar.Close()
 	f.Close()
 	if copyErr != nil {
 		os.Remove(f.Name())
