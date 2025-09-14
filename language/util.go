@@ -100,7 +100,7 @@ func HTTPHead(ctx context.Context, url string) error {
 	if err != nil {
 		return err
 	}
-	io.Copy(io.Discard, res.Body)
+	_, _ = io.Copy(io.Discard, res.Body)
 	res.Body.Close()
 	if res.StatusCode/100 != 2 {
 		return errors.New(res.Status + " " + url)
