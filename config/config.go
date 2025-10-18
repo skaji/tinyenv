@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"slices"
+	"regexp"
 )
 
 func NewFromFile(path string) (*Config, error) {
@@ -24,8 +24,41 @@ type Config struct {
 }
 
 type Rehash struct {
-	Includes []string `json:"includes"`
-	Excludes []string `json:"excludes"`
+	Includes []*regexp.Regexp
+	Excludes []*regexp.Regexp
+}
+
+func (r *Rehash) UnmarshalJSON(b []byte) error {
+	var data struct {
+		Includes []string `json:"includes"`
+		Excludes []string `json:"excludes"`
+	}
+	if err := json.Unmarshal(b, &data); err != nil {
+		return err
+	}
+	var (
+		includes []*regexp.Regexp
+		excludes []*regexp.Regexp
+	)
+	for _, str := range data.Includes {
+		reg, err := regexp.Compile(str)
+		if err != nil {
+			return err
+		}
+		includes = append(includes, reg)
+	}
+	for _, str := range data.Excludes {
+		reg, err := regexp.Compile(str)
+		if err != nil {
+			return err
+		}
+		excludes = append(excludes, reg)
+	}
+	*r = Rehash{
+		Includes: includes,
+		Excludes: excludes,
+	}
+	return nil
 }
 
 func (r *Rehash) Target(name string) bool {
@@ -33,13 +66,21 @@ func (r *Rehash) Target(name string) bool {
 		return true
 	}
 	if len(r.Includes) > 0 {
-		if !slices.Contains(r.Includes, name) {
+		matched := false
+		for _, reg := range r.Includes {
+			if reg.MatchString(name) {
+				matched = true
+			}
+		}
+		if !matched {
 			return false
 		}
 	}
 	if len(r.Excludes) > 0 {
-		if slices.Contains(r.Excludes, name) {
-			return false
+		for _, reg := range r.Excludes {
+			if reg.MatchString(name) {
+				return false
+			}
 		}
 	}
 	return true
