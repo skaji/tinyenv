@@ -73,6 +73,9 @@ func (p *Python) Latest(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if len(out) == 0 {
+		return "", errors.New("not found")
+	}
 	return out[0], nil
 }
 
