@@ -34,8 +34,7 @@ const javaVersionsURL = "https://api.adoptium.net/v3/info/release_names"
 // version, os, arch
 const javaAssetURL = "https://api.adoptium.net/v3/binary/version/%s/%s/%s/jdk/hotspot/normal/eclipse"
 
-func (j *Java) list(ctx context.Context, onlyLTS bool) ([]string, error) {
-	loops := 5
+func (j *Java) list(ctx context.Context, onlyLTS bool, loops int) ([]string, error) {
 	out := make([]string, 20*loops)
 	var group errgroup.Group
 	for i := range loops {
@@ -85,7 +84,7 @@ func (j *Java) list(ctx context.Context, onlyLTS bool) ([]string, error) {
 }
 
 func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
-	out, err := j.list(ctx, false)
+	out, err := j.list(ctx, false, 5)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +112,7 @@ func (j *Java) List(ctx context.Context, all bool) ([]string, error) {
 }
 
 func (j *Java) Latest(ctx context.Context) (string, error) {
-	out, err := j.list(ctx, true)
+	out, err := j.list(ctx, true, 1)
 	if err != nil {
 		return "", err
 	}
