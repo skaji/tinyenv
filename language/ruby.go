@@ -2,12 +2,14 @@ package language
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
-	"strings"
 )
 
 type Ruby struct {
@@ -15,54 +17,85 @@ type Ruby struct {
 	Root string
 }
 
-const rubyURL = "https://github.com/Homebrew/homebrew-portable-ruby"
+const rubyAPIURL = "https://formulae.brew.sh/api/formula/portable-ruby.json"
 
-func (r *Ruby) List(ctx context.Context, all bool) ([]string, error) {
-	tags, err := (&GitHub{}).Tags(ctx, rubyURL)
+func (r *Ruby) list(ctx context.Context) (string, string, error) {
+	body, err := HTTPGet(ctx, rubyAPIURL)
+	if err != nil {
+		return "", "", err
+	}
+	var res struct {
+		Versions struct {
+			Stable string
+		}
+		Bottle struct {
+			Stable struct {
+				Files map[string]map[string]string
+			}
+		}
+	}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return "", "", err
+	}
+	var find *regexp.Regexp
+	switch runtime.GOOS {
+	case "darwin":
+		switch runtime.GOARCH {
+		case "amd64":
+			find = regexp.MustCompile(`^catalina$`)
+		case "arm64":
+			find = regexp.MustCompile(`^arm64_`)
+		}
+	case "linux":
+		switch runtime.GOARCH {
+		case "amd64":
+			find = regexp.MustCompile(`^x86_64_linux$`)
+		case "arm64":
+			find = regexp.MustCompile(`^arm64_linux$`)
+		}
+	}
+	if find == nil {
+		return "", "", fmt.Errorf("unsupported os/arch")
+	}
+	for key, detail := range res.Bottle.Stable.Files {
+		if find.MatchString(key) {
+			return "homebrew-portable-" + res.Versions.Stable, detail["url"], nil
+		}
+	}
+	return "", "", fmt.Errorf("cannot find version, url: %v", res.Bottle.Stable.Files)
+}
+
+func (r *Ruby) List(ctx context.Context, _ bool) ([]string, error) {
+	latest, _, err := r.list(ctx)
 	if err != nil {
 		return nil, err
 	}
-	versions := make([]string, len(tags))
-	for i, tag := range tags {
-		versions[i] = "homebrew-portable-" + tag
-	}
-	if !all && len(versions) > 5 {
-		return versions[:5], nil
-	}
-	return versions, nil
+	return []string{latest}, nil
 }
 
 func (r *Ruby) Latest(ctx context.Context) (string, error) {
-	out, err := r.List(ctx, true)
+	latest, _, err := r.list(ctx)
 	if err != nil {
 		return "", err
 	}
-	if len(out) == 0 {
-		return "", errors.New("not found")
-	}
-	return out[0], nil
+	return latest, nil
 }
 
 func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
+	latest, url, err := r.list(ctx)
+	if err != nil {
+		return "", err
+	}
 	if version == "latest" {
-		latest, err := r.Latest(ctx)
-		if err != nil {
-			return "", err
-		}
 		version = latest
 	}
-	if !strings.HasPrefix(version, "homebrew-portable-") {
-		return "", errors.New("invalid version: " + version)
+	if version != latest {
+		return "", fmt.Errorf("unknown version: %s", version)
 	}
 
 	targetDir := filepath.Join(r.Root, "versions", version)
 	if ExistsFS(targetDir) {
 		return "", errors.New("already exists " + targetDir)
-	}
-
-	url, err := r.url(ctx, version)
-	if err != nil {
-		return "", err
 	}
 
 	cacheFile := filepath.Join(r.Root, "cache", version+".tar.gz")
@@ -71,7 +104,10 @@ func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
 	}
 
 	fmt.Println("---> Downloading " + url)
-	if err := HTTPMirror(ctx, url, cacheFile); err != nil {
+	modifier := func(req *http.Request) {
+		req.Header.Add("Authorization", "Bearer QQ==")
+	}
+	if err := HTTPMirror(ctx, url, cacheFile, modifier); err != nil {
 		return "", err
 	}
 	fmt.Println("---> Extracting " + cacheFile)
@@ -83,33 +119,4 @@ func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
 
 func (r *Ruby) Untar(cacheFile string, targetDir string) error {
 	return UntarStrip(cacheFile, targetDir, 2)
-}
-
-func (r *Ruby) url(ctx context.Context, version string) (string, error) {
-	tag := strings.TrimPrefix(version, "homebrew-portable-")
-	assets, err := (&GitHub{}).Assets(ctx, rubyURL, tag)
-	if err != nil {
-		return "", err
-	}
-	assetMap := map[string]string{}
-	for _, asset := range assets {
-		if !strings.HasSuffix(asset, ".tar.gz") {
-			continue
-		}
-		switch {
-		case strings.Contains(asset, "x86_64_linux"):
-			assetMap["linux_amd64"] = asset
-		case strings.Contains(asset, "arm64_linux"):
-			assetMap["linux_arm64"] = asset
-		case strings.Contains(asset, "arm64"):
-			assetMap["darwin_arm64"] = asset
-		default:
-			assetMap["darwin_amd64"] = asset
-		}
-	}
-	url, ok := assetMap[runtime.GOOS+"_"+runtime.GOARCH]
-	if !ok {
-		return "", fmt.Errorf("no archive for %s %s", runtime.GOOS, runtime.GOARCH)
-	}
-	return url, nil
 }

@@ -86,7 +86,7 @@ func (g *Go) Install(ctx context.Context, version string) (string, error) {
 	}
 
 	fmt.Println("---> Downloading " + url)
-	if err := HTTPMirror(ctx, url, cacheFile); err != nil {
+	if err := HTTPMirror(ctx, url, cacheFile, nil); err != nil {
 		return "", err
 	}
 	fmt.Println("---> Extracting " + cacheFile)

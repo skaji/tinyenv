@@ -108,10 +108,13 @@ func HTTPHead(ctx context.Context, url string) error {
 	return nil
 }
 
-func HTTPMirror(ctx context.Context, url string, targetFile string) error {
+func HTTPMirror(ctx context.Context, url string, targetFile string, modifier func(req *http.Request)) error {
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if info, err := os.Stat(targetFile); err == nil {
 		req.Header.Set("If-Modified-Since", info.ModTime().Format(http.TimeFormat))
+	}
+	if modifier != nil {
+		modifier(req)
 	}
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
