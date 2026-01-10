@@ -4,6 +4,7 @@ go 1.25.5
 
 require (
 	github.com/schollz/progressbar/v3 v3.19.0
+	github.com/urfave/cli/v3 v3.6.1
 	golang.org/x/mod v0.31.0
 	golang.org/x/sync v0.19.0
 )
