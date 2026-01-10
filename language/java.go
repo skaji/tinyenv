@@ -75,9 +75,8 @@ func (j *Java) list(ctx context.Context, onlyLTS bool, loops int) ([]string, err
 	}
 	var out2 []string
 	for _, version := range out {
-		if strings.HasPrefix(version, "jdk-") {
-			version = strings.TrimPrefix(version, "jdk-")
-			out2 = append(out2, "temurin-"+version)
+		if rest, ok := strings.CutPrefix(version, "jdk-"); ok {
+			out2 = append(out2, "temurin-"+rest)
 		}
 	}
 	return out2, nil

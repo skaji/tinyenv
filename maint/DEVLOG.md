@@ -78,6 +78,19 @@ This lets you constrain which executables are turned into shims.
 $ go test ./...
 ```
 
+## Development Workflow
+
+Use the Makefile targets during development and after each step:
+
+```bash
+$ make build
+$ make test
+$ make lint
+```
+
+`make lint` runs `prettier`, `golangci-lint`, and `gopls check`, so ensure those tools
+are available in your environment.
+
 ## Notes and Pitfalls
 
 - Many language installs depend on platform-specific assets (OS/arch).
@@ -100,4 +113,4 @@ $ go test ./...
 
 - Update or add a language implementation in `language/`.
 - Run `gofmt` on modified Go files.
-- Run `go test ./...` if your change affects language logic.
+- Run `make build`, `make test`, and `make lint` before finishing a change.

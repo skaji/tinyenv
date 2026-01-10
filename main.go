@@ -51,7 +51,7 @@ func main() {
 			&cli.BoolFlag{Name: "completion1", Hidden: true},
 			&cli.BoolFlag{Name: "completion2", Hidden: true},
 		},
-		Action: func(ctx context.Context, cmd *cli.Command) error {
+		Action: func(_ context.Context, cmd *cli.Command) error {
 			if cmd.Bool("completion1") {
 				for _, l := range language.All {
 					fmt.Fprintln(cmd.Writer, l)
@@ -71,7 +71,7 @@ func main() {
 			}
 			return cli.Exit("invalid arguments", 1)
 		},
-		CommandNotFound: func(ctx context.Context, cmd *cli.Command, name string) {
+		CommandNotFound: func(_ context.Context, cmd *cli.Command, name string) {
 			fmt.Fprintln(cmd.ErrWriter, "unknown language: "+name)
 			cli.OsExiter(1)
 		},
@@ -103,7 +103,7 @@ func globalCommandsSpec() []*cli.Command {
 	return []*cli.Command{
 		{
 			Name: "root",
-			Action: func(ctx context.Context, cmd *cli.Command) error {
+			Action: func(_ context.Context, cmd *cli.Command) error {
 				root, _, err := loadRootConfig()
 				if err != nil {
 					return err
@@ -114,7 +114,7 @@ func globalCommandsSpec() []*cli.Command {
 		},
 		{
 			Name: "version",
-			Action: func(ctx context.Context, cmd *cli.Command) error {
+			Action: func(_ context.Context, cmd *cli.Command) error {
 				root, cfg, err := loadRootConfig()
 				if err != nil {
 					return err
@@ -130,7 +130,7 @@ func globalCommandsSpec() []*cli.Command {
 		},
 		{
 			Name: "versions",
-			Action: func(ctx context.Context, cmd *cli.Command) error {
+			Action: func(_ context.Context, cmd *cli.Command) error {
 				root, cfg, err := loadRootConfig()
 				if err != nil {
 					return err
@@ -155,7 +155,7 @@ func globalCommandsSpec() []*cli.Command {
 		},
 		{
 			Name: "rehash",
-			Action: func(ctx context.Context, cmd *cli.Command) error {
+			Action: func(_ context.Context, _ *cli.Command) error {
 				root, cfg, err := loadRootConfig()
 				if err != nil {
 					return err
@@ -218,7 +218,7 @@ func globalCommandsSpec() []*cli.Command {
 		},
 		{
 			Name: "files",
-			Action: func(ctx context.Context, cmd *cli.Command) error {
+			Action: func(_ context.Context, cmd *cli.Command) error {
 				root, _, err := loadRootConfig()
 				if err != nil {
 					return err
@@ -258,7 +258,7 @@ func globalCommandsSpec() []*cli.Command {
 		},
 		{
 			Name: "zsh-completions",
-			Action: func(ctx context.Context, cmd *cli.Command) error {
+			Action: func(_ context.Context, cmd *cli.Command) error {
 				fmt.Fprint(cmd.Writer, zshCompletions)
 				return nil
 			},
@@ -273,7 +273,7 @@ func languageCommandsSpec() []*cli.Command {
 		commands = append(commands, &cli.Command{
 			Name:  langName,
 			Usage: langName + " commands",
-			Action: func(ctx context.Context, cmd *cli.Command) error {
+			Action: func(_ context.Context, _ *cli.Command) error {
 				return cli.Exit("invalid arguments", 1)
 			},
 			Commands: languageSubcommandsSpec(langName),
@@ -289,7 +289,7 @@ func languageSubcommandsSpec(langName string) []*cli.Command {
 			Flags: []cli.Flag{
 				&cli.BoolFlag{Name: "bare"},
 			},
-			Action: func(ctx context.Context, cmd *cli.Command) error {
+			Action: func(_ context.Context, cmd *cli.Command) error {
 				lang, err := loadLanguageConfig(langName)
 				if err != nil {
 					return err
@@ -316,7 +316,7 @@ func languageSubcommandsSpec(langName string) []*cli.Command {
 		},
 		{
 			Name: "version",
-			Action: func(ctx context.Context, cmd *cli.Command) error {
+			Action: func(_ context.Context, cmd *cli.Command) error {
 				lang, err := loadLanguageConfig(langName)
 				if err != nil {
 					return err
@@ -331,7 +331,7 @@ func languageSubcommandsSpec(langName string) []*cli.Command {
 		},
 		{
 			Name: "global",
-			Action: func(ctx context.Context, cmd *cli.Command) error {
+			Action: func(_ context.Context, cmd *cli.Command) error {
 				lang, err := loadLanguageConfig(langName)
 				if err != nil {
 					return err
@@ -370,7 +370,7 @@ func languageSubcommandsSpec(langName string) []*cli.Command {
 		},
 		{
 			Name: "rehash",
-			Action: func(ctx context.Context, cmd *cli.Command) error {
+			Action: func(_ context.Context, _ *cli.Command) error {
 				lang, err := loadLanguageConfig(langName)
 				if err != nil {
 					return err
@@ -417,7 +417,7 @@ func languageSubcommandsSpec(langName string) []*cli.Command {
 		},
 		{
 			Name: "reset",
-			Action: func(ctx context.Context, cmd *cli.Command) error {
+			Action: func(_ context.Context, cmd *cli.Command) error {
 				lang, err := loadLanguageConfig(langName)
 				if err != nil {
 					return err
