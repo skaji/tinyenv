@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+
+	"golang.org/x/mod/semver"
 )
 
 type Solr struct {
@@ -37,7 +39,9 @@ func (s *Solr) List(ctx context.Context, all bool) ([]string, error) {
 	for _, m := range matches {
 		out = append(out, m[1])
 	}
-	slices.Reverse(out)
+	slices.SortFunc(out, func(v1, v2 string) int {
+		return -1 * semver.Compare("v"+v1, "v"+v2)
+	})
 	if !all && len(out) > 10 {
 		return out[:10], nil
 	}
