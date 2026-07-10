@@ -34,6 +34,7 @@ Global Commands:
   versions
 
 Languages:
+  gcloud
   go
   java
   node

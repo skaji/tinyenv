@@ -15,6 +15,7 @@ import (
 )
 
 var All = []string{
+	"gcloud",
 	"go",
 	"java",
 	"node",
@@ -42,6 +43,8 @@ type Specific interface {
 
 func (l *Language) Specific() Specific {
 	switch l.Name {
+	case "gcloud":
+		return &GCloud{Root: l.Root}
 	case "go":
 		return &Go{Root: l.Root}
 	case "java":
