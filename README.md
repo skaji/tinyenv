@@ -34,6 +34,7 @@ Global Commands:
   versions
 
 Languages:
+  aws
   go
   java
   node

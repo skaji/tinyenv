@@ -16,6 +16,7 @@ import (
 )
 
 var All = []string{
+	"aws",
 	"go",
 	"java",
 	"node",
@@ -43,6 +44,8 @@ type Specific interface {
 
 func (l *Language) Specific() Specific {
 	switch l.Name {
+	case "aws":
+		return &AWS{Root: l.Root}
 	case "go":
 		return &Go{Root: l.Root}
 	case "java":
@@ -214,12 +217,16 @@ func (l *Language) Reset(version string) error {
 	if !ExistsFS(targetDir) {
 		return errors.New("invalid version: " + version)
 	}
-	cacheFile := filepath.Join(l.Root, "cache", version+".tar.gz")
-	if !ExistsFS(cacheFile) {
-		cacheFile = filepath.Join(l.Root, "cache", version+".tar.xz")
-		if !ExistsFS(cacheFile) {
-			return errors.New("no cache file for " + version)
+	var cacheFile string
+	for _, ext := range []string{".tar.gz", ".tar.xz", ".zip", ".pkg"} {
+		path := filepath.Join(l.Root, "cache", version+ext)
+		if ExistsFS(path) {
+			cacheFile = path
+			break
 		}
+	}
+	if cacheFile == "" {
+		return errors.New("no cache file for " + version)
 	}
 	fmt.Println("---> Removing " + targetDir)
 	if err := os.RemoveAll(targetDir); err != nil {
