@@ -37,6 +37,7 @@ type Specific interface {
 	Install(ctx context.Context, version string) (string, error)
 	BinDirs() []string
 	Untar(tarball string, targetDir string) error
+	Script(header string, source string, version string, binDir string, name string) string
 }
 
 func (l *Language) Specific() Specific {
@@ -187,7 +188,7 @@ func (l *Language) Rehash() error {
 		for _, exeFile := range exeFiles {
 			source := filepath.Join(l.Root, "versions", version, binDir, exeFile)
 			target := filepath.Join(filepath.Dir(l.Root), "bin", exeFile)
-			content := header + fmt.Sprintf(`exec "%s" "$@"`, source) + "\n"
+			content := l.Specific().Script(header, source, version, binDir, exeFile)
 			if err := os.WriteFile(target, []byte(content), 0o755); err != nil {
 				return err
 			}
