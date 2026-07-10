@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -36,6 +37,7 @@ type Specific interface {
 	Latest(ctx context.Context) (string, error)
 	Install(ctx context.Context, version string) (string, error)
 	BinDirs() []string
+	BinFile() *regexp.Regexp
 	Untar(tarball string, targetDir string) error
 }
 
@@ -163,6 +165,7 @@ func (l *Language) Rehash() error {
 	if l.Config != nil {
 		cfg = l.Config.Rehash[l.Name]
 	}
+	binFile := l.Specific().BinFile()
 	for _, binDir := range l.Specific().BinDirs() {
 		entries, err := os.ReadDir(filepath.Join(l.Root, "versions", version, binDir))
 		if err != nil {
@@ -174,6 +177,9 @@ func (l *Language) Rehash() error {
 				continue
 			}
 			if !cfg.Target(e.Name()) {
+				continue
+			}
+			if binFile != nil && !binFile.MatchString(e.Name()) {
 				continue
 			}
 			info, err := e.Info()
