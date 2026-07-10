@@ -13,7 +13,8 @@ hash4	refs/tags/1.40.0
 hash5	refs/tags/2.10.0dev0
 `
 	want := []string{"2.10.0", "2.9.2", "2.9.1"}
-	got := parseAWSVersions(body, true)
+	a := &AWS{}
+	got := a.parseVersions(body, true)
 	if !slices.Equal(got, want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}

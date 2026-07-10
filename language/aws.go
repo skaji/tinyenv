@@ -32,10 +32,10 @@ func (a *AWS) List(ctx context.Context, all bool) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("git ls-remote: %w: %s", err, strings.TrimSpace(string(body)))
 	}
-	return parseAWSVersions(string(body), all), nil
+	return a.parseVersions(string(body), all), nil
 }
 
-func parseAWSVersions(body string, all bool) []string {
+func (*AWS) parseVersions(body string, all bool) []string {
 	var out []string
 	for line := range strings.Lines(body) {
 		_, tag, ok := strings.Cut(strings.TrimSpace(line), "\trefs/tags/")
@@ -80,7 +80,7 @@ func (a *AWS) Install(ctx context.Context, version string) (string, error) {
 		return "", errors.New("already exists " + targetDir)
 	}
 
-	url, ext, err := awsAsset(version)
+	url, ext, err := a.asset(version)
 	if err != nil {
 		return "", err
 	}
@@ -154,7 +154,7 @@ func (*AWS) Untar(archive string, targetDir string) error {
 	return os.Rename(sourceDir, targetDir)
 }
 
-func awsAsset(version string) (string, string, error) {
+func (*AWS) asset(version string) (string, string, error) {
 	switch runtime.GOOS {
 	case "darwin":
 		return fmt.Sprintf("https://awscli.amazonaws.com/AWSCLIV2-%s.pkg", version), ".pkg", nil
