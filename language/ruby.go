@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strings"
 )
 
 type Ruby struct {
@@ -81,7 +82,7 @@ func (r *Ruby) Latest(ctx context.Context) (string, error) {
 	return latest, nil
 }
 
-func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
+func (r *Ruby) Install(ctx context.Context, version string, targetDir string) (string, error) {
 	latest, url, err := r.list(ctx)
 	if err != nil {
 		return "", err
@@ -89,11 +90,20 @@ func (r *Ruby) Install(ctx context.Context, version string) (string, error) {
 	if version == "latest" {
 		version = latest
 	}
+	if strings.Contains(version, "*") {
+		matched, err := FindMatch([]string{latest}, version)
+		if err != nil {
+			return "", err
+		}
+		version = matched
+	}
 	if version != latest {
 		return "", fmt.Errorf("unknown version: %s", version)
 	}
 
-	targetDir := filepath.Join(r.Root, "versions", version)
+	if targetDir == "" {
+		targetDir = filepath.Join(r.Root, "versions", version)
+	}
 	if ExistsFS(targetDir) {
 		return "", errors.New("already exists " + targetDir)
 	}

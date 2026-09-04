@@ -384,6 +384,7 @@ func languageSubcommandsSpec(langName string) []*cli.Command {
 				&cli.BoolFlag{Name: "list", Aliases: []string{"l"}},
 				&cli.BoolFlag{Name: "list-all", Aliases: []string{"L"}},
 				&cli.BoolFlag{Name: "global", Aliases: []string{"g"}},
+				&cli.StringFlag{Name: "target", Aliases: []string{"t"}},
 			},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
 				lang, err := loadLanguageConfig(langName)
@@ -404,10 +405,17 @@ func languageSubcommandsSpec(langName string) []*cli.Command {
 				if cmd.Args().Len() == 0 {
 					return errors.New("need version argument")
 				}
+				targetDir := cmd.String("target")
 				version := cmd.Args().First()
-				version2, err := lang.Install(ctx, version)
-				if err != nil || !cmd.Bool("global") {
+				version2, err := lang.Install(ctx, version, targetDir)
+				if err != nil {
 					return err
+				}
+				if targetDir != "" {
+					return nil
+				}
+				if !cmd.Bool("global") {
+					return nil
 				}
 				if err := lang.SetVersion(version2); err != nil {
 					return err

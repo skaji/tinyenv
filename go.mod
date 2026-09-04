@@ -3,6 +3,7 @@ module github.com/skaji/tinyenv
 go 1.27.0
 
 require (
+	github.com/gobwas/glob v1.0.0
 	github.com/schollz/progressbar/v3 v3.19.1
 	github.com/urfave/cli/v3 v3.11.0
 	golang.org/x/mod v0.40.0

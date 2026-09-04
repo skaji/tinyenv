@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/gobwas/glob"
 )
 
 type Raku struct {
@@ -87,7 +89,7 @@ func (r *Raku) Latest(ctx context.Context) (string, error) {
 	return out[0].Version, nil
 }
 
-func (r *Raku) Install(ctx context.Context, version string) (string, error) {
+func (r *Raku) Install(ctx context.Context, version string, targetDir string) (string, error) {
 	assets, err := r.list(ctx)
 	if err != nil {
 		return "", err
@@ -95,6 +97,19 @@ func (r *Raku) Install(ctx context.Context, version string) (string, error) {
 	var asset *rakuAsset
 	if version == "latest" {
 		asset = assets[0]
+		version = asset.Version
+	} else if strings.Contains(version, "*") {
+		g, err := glob.Compile(version)
+		if err != nil {
+			return "", err
+		}
+		index := slices.IndexFunc(assets, func(a *rakuAsset) bool {
+			return g.Match(a.Version)
+		})
+		if index == -1 {
+			return "", fmt.Errorf("no matching for '%s'", version)
+		}
+		asset = assets[index]
 		version = asset.Version
 	} else {
 		index := slices.IndexFunc(assets, func(a *rakuAsset) bool {
@@ -106,7 +121,9 @@ func (r *Raku) Install(ctx context.Context, version string) (string, error) {
 		asset = assets[index]
 	}
 
-	targetDir := filepath.Join(r.Root, "versions", version)
+	if targetDir == "" {
+		targetDir = filepath.Join(r.Root, "versions", version)
+	}
 	if ExistsFS(targetDir) {
 		return "", errors.New("already exists " + targetDir)
 	}

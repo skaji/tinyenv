@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"golang.org/x/mod/semver"
 )
@@ -101,7 +102,7 @@ func (n *Node) Latest(ctx context.Context) (string, error) {
 	return "", errors.New("not found")
 }
 
-func (n *Node) Install(ctx context.Context, version string) (string, error) {
+func (n *Node) Install(ctx context.Context, version string, targetDir string) (string, error) {
 	if version == "latest" {
 		latest, err := n.Latest(ctx)
 		if err != nil {
@@ -109,7 +110,20 @@ func (n *Node) Install(ctx context.Context, version string) (string, error) {
 		}
 		version = latest
 	}
-	targetDir := filepath.Join(n.Root, "versions", version)
+	if strings.Contains(version, "*") {
+		versions, err := n.List(ctx, true)
+		if err != nil {
+			return "", err
+		}
+		matched, err := FindMatch(versions, version)
+		if err != nil {
+			return "", err
+		}
+		version = matched
+	}
+	if targetDir == "" {
+		targetDir = filepath.Join(n.Root, "versions", version)
+	}
 	if ExistsFS(targetDir) {
 		return "", errors.New("already exists " + targetDir)
 	}

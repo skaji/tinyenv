@@ -66,7 +66,7 @@ func (g *Go) Latest(ctx context.Context) (string, error) {
 	return out[0], nil
 }
 
-func (g *Go) Install(ctx context.Context, version string) (string, error) {
+func (g *Go) Install(ctx context.Context, version string, targetDir string) (string, error) {
 	if version == "latest" {
 		latest, err := g.Latest(ctx)
 		if err != nil {
@@ -74,7 +74,20 @@ func (g *Go) Install(ctx context.Context, version string) (string, error) {
 		}
 		version = latest
 	}
-	targetDir := filepath.Join(g.Root, "versions", version)
+	if strings.Contains(version, "*") {
+		versions, err := g.List(ctx, true)
+		if err != nil {
+			return "", err
+		}
+		matched, err := FindMatch(versions, version)
+		if err != nil {
+			return "", err
+		}
+		version = matched
+	}
+	if targetDir == "" {
+		targetDir = filepath.Join(g.Root, "versions", version)
+	}
 	if ExistsFS(targetDir) {
 		return "", errors.New("already exists " + targetDir)
 	}

@@ -34,7 +34,7 @@ type Language struct {
 type Specific interface {
 	List(ctx context.Context, all bool) ([]string, error)
 	Latest(ctx context.Context) (string, error)
-	Install(ctx context.Context, version string) (string, error)
+	Install(ctx context.Context, version string, targetDir string) (string, error)
 	BinDirs() []string
 	Untar(tarball string, targetDir string) error
 }
@@ -70,8 +70,8 @@ func (l *Language) Latest(ctx context.Context) (string, error) {
 	return l.Specific().Latest(ctx)
 }
 
-func (l *Language) Install(ctx context.Context, version string) (string, error) {
-	return l.Specific().Install(ctx, version)
+func (l *Language) Install(ctx context.Context, version string, targetDir string) (string, error) {
+	return l.Specific().Install(ctx, version, targetDir)
 }
 
 func (l *Language) Version() (string, error) {

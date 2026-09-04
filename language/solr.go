@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strings"
 
 	"golang.org/x/mod/semver"
 )
@@ -59,7 +60,7 @@ func (s *Solr) Latest(ctx context.Context) (string, error) {
 	return out[0], nil
 }
 
-func (s *Solr) Install(ctx context.Context, version string) (string, error) {
+func (s *Solr) Install(ctx context.Context, version string, targetDir string) (string, error) {
 	if version == "latest" {
 		latest, err := s.Latest(ctx)
 		if err != nil {
@@ -67,7 +68,20 @@ func (s *Solr) Install(ctx context.Context, version string) (string, error) {
 		}
 		version = latest
 	}
-	targetDir := filepath.Join(s.Root, "versions", version)
+	if strings.Contains(version, "*") {
+		versions, err := s.List(ctx, true)
+		if err != nil {
+			return "", err
+		}
+		matched, err := FindMatch(versions, version)
+		if err != nil {
+			return "", err
+		}
+		version = matched
+	}
+	if targetDir == "" {
+		targetDir = filepath.Join(s.Root, "versions", version)
+	}
 	if ExistsFS(targetDir) {
 		return "", errors.New("already exists " + targetDir)
 	}

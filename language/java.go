@@ -121,7 +121,7 @@ func (j *Java) Latest(ctx context.Context) (string, error) {
 	return out[0], nil
 }
 
-func (j *Java) Install(ctx context.Context, version string) (string, error) {
+func (j *Java) Install(ctx context.Context, version string, targetDir string) (string, error) {
 	if version == "latest" {
 		latest, err := j.Latest(ctx)
 		if err != nil {
@@ -129,11 +129,24 @@ func (j *Java) Install(ctx context.Context, version string) (string, error) {
 		}
 		version = latest
 	}
+	if strings.Contains(version, "*") {
+		versions, err := j.List(ctx, true)
+		if err != nil {
+			return "", err
+		}
+		matched, err := FindMatch(versions, version)
+		if err != nil {
+			return "", err
+		}
+		version = matched
+	}
 	if !strings.HasPrefix(version, "temurin-") {
 		return "", errors.New("invalid version: " + version)
 	}
 
-	targetDir := filepath.Join(j.Root, "versions", version)
+	if targetDir == "" {
+		targetDir = filepath.Join(j.Root, "versions", version)
+	}
 	if ExistsFS(targetDir) {
 		return "", errors.New("already exists " + targetDir)
 	}

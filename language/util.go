@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"runtime"
 
+	"github.com/gobwas/glob"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -154,4 +155,17 @@ func HTTPMirror(ctx context.Context, url string, targetFile string, modifier fun
 		return err
 	}
 	return nil
+}
+
+func FindMatch(strs []string, pattern string) (string, error) {
+	g, err := glob.Compile(pattern)
+	if err != nil {
+		return "", err
+	}
+	for _, s := range strs {
+		if g.Match(s) {
+			return s, nil
+		}
+	}
+	return "", fmt.Errorf("no matching for '%s'", pattern)
 }
